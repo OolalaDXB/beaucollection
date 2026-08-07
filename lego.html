@@ -1,0 +1,1376 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ma Collection LEGO | BEAU Collections</title>
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;500;600&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.1/jspdf.plugin.autotable.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <style>
+        :root {
+            /* Light theme - Quiet Luxury - DEFAULT */
+            --bg-deep: #FAFAF8;
+            --bg-card: #FFFFFF;
+            --bg-hover: #F5F5F3;
+            --bg-input: #F8F8F6;
+            --text-primary: #1a1a1a;
+            --text-secondary: #6b6b6b;
+            --accent-primary: #C41E3A;
+            --accent-secondary: #D4A853;
+            --accent-tertiary: #2B5797;
+            --accent-quaternary: #1E7145;
+            --border: #E8E8E6;
+            --border-light: #F0F0EE;
+            --positive: #1E7145;
+            --negative: #C41E3A;
+            --shadow: 0 2px 8px rgba(0,0,0,0.04);
+            --shadow-hover: 0 8px 24px rgba(0,0,0,0.08);
+        }
+        [data-theme="dark"] {
+            --bg-deep: #1a1412;
+            --bg-card: #251e1a;
+            --bg-hover: #2f2722;
+            --bg-input: #2a2320;
+            --text-primary: #f0ebe8;
+            --text-secondary: #b8a89a;
+            --border: #3d332d;
+            --border-light: #342c27;
+            --shadow: 0 2px 8px rgba(0,0,0,0.3);
+            --shadow-hover: 0 8px 24px rgba(0,0,0,0.4);
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: var(--bg-deep);
+            color: var(--text-primary);
+            min-height: 100vh;
+            line-height: 1.6;
+            transition: background .3s, color .3s;
+        }
+        body.hide-prices .price-item, body.hide-prices .price-field { display: none !important; }
+        
+        /* Header */
+        .header {
+            background: var(--bg-card);
+            border-bottom: 1px solid var(--border);
+            padding: 1rem 2rem;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            box-shadow: var(--shadow);
+        }
+        .header-content {
+            max-width: 1400px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 1.5rem;
+        }
+        .header-left {
+            display: flex;
+            align-items: center;
+            gap: 0;
+        }
+        .logo {
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: .6rem;
+        }
+
+        .logo-text {
+            font-family: 'Playfair Display', serif;
+            font-size: 1.35rem;
+            font-weight: 500;
+            letter-spacing: .02em;
+            color: var(--accent-primary);
+        }
+        .logo-sub {
+            font-size: .6rem;
+            color: var(--text-secondary);
+            letter-spacing: .12em;
+            text-transform: uppercase;
+            font-weight: 500;
+        }
+        
+        .nav-divider {
+            width: 1px;
+            height: 28px;
+            background: var(--border);
+            margin: 0 1.25rem;
+        }
+        
+        .nav-links {
+            display: flex;
+            align-items: center;
+            gap: .35rem;
+        }
+        .nav-link {
+            padding: .45rem .7rem;
+            background: var(--bg-input);
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            color: var(--text-secondary);
+            font-size: .75rem;
+            font-weight: 500;
+            text-decoration: none;
+            transition: all .2s;
+            display: flex;
+            align-items: center;
+            gap: .3rem;
+        }
+        .nav-link:hover {
+            background: var(--bg-hover);
+            color: var(--text-primary);
+            border-color: var(--accent-secondary);
+        }
+        .nav-link.active {
+            background: var(--accent-primary);
+            border-color: var(--accent-primary);
+            color: white;
+        }
+        
+        .header-actions {
+            display: flex;
+            align-items: center;
+            gap: .6rem;
+        }
+        .theme-toggle {
+            background: var(--bg-input);
+            border: 1px solid var(--border);
+            border-radius: 20px;
+            padding: .3rem;
+            cursor: pointer;
+            display: flex;
+            gap: .2rem;
+        }
+        .theme-icon {
+            width: 22px;
+            height: 22px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: .7rem;
+            transition: all .2s;
+        }
+        .theme-icon.active {
+            background: var(--accent-secondary);
+            color: white;
+        }
+        .header-btn {
+            background: var(--bg-input);
+            border: 1px solid var(--border);
+            color: var(--text-primary);
+            padding: .5rem .85rem;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: .8rem;
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+            gap: .4rem;
+            transition: all .2s;
+        }
+        .header-btn:hover {
+            background: var(--bg-hover);
+            border-color: var(--accent-secondary);
+        }
+        .header-btn.primary {
+            background: var(--accent-primary);
+            border-color: var(--accent-primary);
+            color: white;
+        }
+        .header-btn.primary:hover {
+            background: #a91832;
+        }
+        .header-btn.wishlist {
+            background: var(--accent-tertiary);
+            border-color: var(--accent-tertiary);
+            color: white;
+        }
+        .header-btn.moc {
+            background: var(--accent-quaternary);
+            border-color: var(--accent-quaternary);
+            color: white;
+        }
+        .btn-count {
+            background: rgba(255,255,255,0.25);
+            padding: .1rem .4rem;
+            border-radius: 10px;
+            font-size: .7rem;
+            font-weight: 600;
+        }
+        
+        /* User Menu */
+        .user-menu { position: relative; }
+        .user-menu-btn {
+            display: flex;
+            align-items: center;
+            gap: .4rem;
+            background: var(--bg-input);
+            border: 1px solid var(--border);
+            padding: .35rem .65rem .35rem .35rem;
+            border-radius: 20px;
+            cursor: pointer;
+            transition: all .2s;
+            font-size: .75rem;
+            color: var(--text-primary);
+        }
+        .user-menu-btn:hover { border-color: var(--accent-secondary); }
+        .user-menu-avatar {
+            width: 24px;
+            height: 24px;
+            background: linear-gradient(135deg, var(--accent-primary), var(--accent-secondary));
+            border-radius: 4px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-family: 'Playfair Display', serif;
+            font-size: .65rem;
+            color: white;
+            font-weight: 600;
+        }
+        .user-dropdown {
+            position: absolute;
+            top: calc(100% + 8px);
+            right: 0;
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            min-width: 180px;
+            box-shadow: var(--shadow-hover);
+            display: none;
+            overflow: hidden;
+            z-index: 200;
+        }
+        .user-dropdown.active { display: block; }
+        .user-dropdown-header {
+            padding: .85rem 1rem;
+            border-bottom: 1px solid var(--border);
+            background: var(--bg-input);
+        }
+        .user-dropdown-name { font-weight: 600; font-size: .85rem; }
+        .user-dropdown-alias { font-size: .7rem; color: var(--text-secondary); }
+        .user-dropdown-item {
+            padding: .65rem 1rem;
+            font-size: .8rem;
+            cursor: pointer;
+            transition: background .15s;
+            display: flex;
+            align-items: center;
+            gap: .6rem;
+            color: var(--text-primary);
+            text-decoration: none;
+        }
+        .user-dropdown-item:hover { background: var(--bg-hover); }
+        .user-dropdown-item svg { width: 16px; height: 16px; stroke: var(--accent-secondary); }
+        .user-dropdown-item.danger { color: var(--negative); }
+        .user-dropdown-item.danger svg { stroke: var(--negative); }
+        .user-dropdown-divider { height: 1px; background: var(--border); }
+        
+        /* Stats Bar */
+        .stats-bar {
+            padding: 1.25rem 2rem;
+            background: var(--bg-card);
+            border-bottom: 1px solid var(--border);
+        }
+        .stats-bar-inner {
+            max-width: 1400px;
+            margin: 0 auto;
+            display: flex;
+            gap: 2.5rem;
+            flex-wrap: wrap;
+            align-items: center;
+        }
+        .stat-item { text-align: center; }
+        .stat-value {
+            font-family: 'Playfair Display', serif;
+            font-size: 1.85rem;
+            font-weight: 500;
+            color: var(--accent-primary);
+            line-height: 1.1;
+        }
+        .stat-value.gold { color: var(--accent-secondary); }
+        .stat-value.blue { color: var(--accent-tertiary); }
+        .stat-value.green { color: var(--accent-quaternary); }
+        .stat-label {
+            font-size: .65rem;
+            color: var(--text-secondary);
+            text-transform: uppercase;
+            letter-spacing: .08em;
+            font-weight: 500;
+            margin-top: .15rem;
+        }
+        .progress-container { flex: 1; min-width: 200px; }
+        .progress-label {
+            font-size: .65rem;
+            color: var(--text-secondary);
+            margin-bottom: .35rem;
+            font-weight: 500;
+            text-transform: uppercase;
+            letter-spacing: .05em;
+        }
+        .progress-bar {
+            height: 6px;
+            background: var(--bg-input);
+            border-radius: 3px;
+            overflow: hidden;
+        }
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, var(--accent-primary), var(--accent-secondary));
+            border-radius: 3px;
+            transition: width .5s ease;
+        }
+        .progress-text {
+            font-size: .75rem;
+            color: var(--text-secondary);
+            margin-top: .35rem;
+            text-align: right;
+        }
+        
+        /* Filters */
+        .filters {
+            padding: .85rem 2rem;
+            background: var(--bg-deep);
+            border-bottom: 1px solid var(--border);
+        }
+        .filters-inner {
+            max-width: 1400px;
+            margin: 0 auto;
+            display: flex;
+            gap: .5rem;
+            flex-wrap: wrap;
+            align-items: center;
+        }
+        .filter-check {
+            display: flex;
+            align-items: center;
+            gap: .35rem;
+            font-size: .75rem;
+            color: var(--text-secondary);
+            cursor: pointer;
+            padding: .4rem .65rem;
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            transition: all .2s;
+            font-weight: 500;
+        }
+        .filter-check:hover { border-color: var(--accent-secondary); }
+        .filter-check:has(input:checked) {
+            background: var(--accent-primary);
+            border-color: var(--accent-primary);
+            color: white;
+        }
+        .filter-check input { display: none; }
+        .filter-select {
+            padding: .45rem .85rem;
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            color: var(--text-primary);
+            font-size: .75rem;
+            cursor: pointer;
+            font-weight: 500;
+        }
+        .filter-select:focus { outline: none; border-color: var(--accent-secondary); }
+        .search-input {
+            padding: .45rem .85rem;
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            color: var(--text-primary);
+            font-size: .75rem;
+            min-width: 180px;
+        }
+        .search-input:focus { outline: none; border-color: var(--accent-secondary); }
+        .filter-reset {
+            padding: .4rem .65rem;
+            background: transparent;
+            border: 1px dashed var(--border);
+            border-radius: 6px;
+            color: var(--text-secondary);
+            font-size: .7rem;
+            cursor: pointer;
+            font-weight: 500;
+        }
+        .filter-reset:hover { border-color: var(--accent-primary); color: var(--text-primary); }
+        
+        /* Main */
+        .main {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 1.75rem 2rem;
+        }
+        
+        /* Links */
+        .useful-links {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            padding: 1.1rem 1.25rem;
+            margin-bottom: 1.75rem;
+            box-shadow: var(--shadow);
+        }
+        .useful-links-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: .85rem;
+        }
+        .useful-links-title {
+            font-family: 'Playfair Display', serif;
+            font-size: 1rem;
+            color: var(--accent-secondary);
+        }
+        .useful-links-grid { display: flex; flex-wrap: wrap; gap: .5rem; }
+        .useful-link {
+            display: inline-flex;
+            align-items: center;
+            gap: .4rem;
+            padding: .45rem .7rem;
+            background: var(--bg-input);
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            color: var(--text-primary);
+            text-decoration: none;
+            font-size: .75rem;
+            font-weight: 500;
+            transition: all .2s;
+        }
+        .useful-link:hover { background: var(--bg-hover); border-color: var(--accent-secondary); }
+        .useful-link.official { border-color: var(--accent-primary); background: rgba(196,30,58,0.06); }
+        
+        /* Empty State */
+        .empty-state {
+            text-align: center;
+            padding: 4rem 2rem;
+            color: var(--text-secondary);
+        }
+        .empty-state-icon { font-size: 4rem; margin-bottom: 1.25rem; opacity: .4; }
+        .empty-state-title {
+            font-family: 'Playfair Display', serif;
+            font-size: 1.5rem;
+            color: var(--text-primary);
+            margin-bottom: .6rem;
+        }
+        .empty-state-text { font-size: .9rem; margin-bottom: 1.75rem; max-width: 400px; margin-left: auto; margin-right: auto; }
+        .empty-state-btn {
+            background: var(--accent-primary);
+            border: none;
+            color: white;
+            padding: .85rem 1.75rem;
+            border-radius: 8px;
+            font-size: .9rem;
+            cursor: pointer;
+            font-weight: 600;
+            transition: background .2s;
+        }
+        .empty-state-btn:hover { background: #a91832; }
+        
+        /* Sections */
+        .section { margin-bottom: 2rem; }
+        .section-title {
+            font-family: 'Playfair Display', serif;
+            font-size: 1.2rem;
+            margin-bottom: 1.1rem;
+            display: flex;
+            align-items: center;
+            gap: .6rem;
+        }
+        .section-badge {
+            background: var(--accent-primary);
+            color: white;
+            font-size: .65rem;
+            padding: .2rem .55rem;
+            border-radius: 10px;
+            font-family: 'Inter', sans-serif;
+            font-weight: 600;
+        }
+        .section-badge.gold { background: var(--accent-secondary); }
+        .section-badge.blue { background: var(--accent-tertiary); }
+        .section-badge.green { background: var(--accent-quaternary); }
+        
+        /* Set Cards */
+        .sets-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 1.1rem;
+        }
+        .set-card {
+            background: var(--bg-card);
+            border-radius: 10px;
+            overflow: hidden;
+            cursor: pointer;
+            transition: all .25s;
+            position: relative;
+            border: 1px solid var(--border);
+            box-shadow: var(--shadow);
+        }
+        .set-card:hover {
+            transform: translateY(-3px);
+            box-shadow: var(--shadow-hover);
+            border-color: var(--accent-secondary);
+        }
+        .set-card.in-wishlist { border-color: var(--accent-tertiary); }
+        .set-card.in-wishlist::after {
+            content: '★';
+            position: absolute;
+            top: .6rem;
+            right: .6rem;
+            background: var(--accent-tertiary);
+            color: white;
+            width: 22px;
+            height: 22px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: .65rem;
+            z-index: 5;
+        }
+        .set-cover {
+            position: relative;
+            aspect-ratio: 4/3;
+            background: var(--bg-input);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+        }
+        .set-cover img { max-width: 90%; max-height: 90%; object-fit: contain; }
+        .set-number {
+            position: absolute;
+            top: .6rem;
+            left: .6rem;
+            background: var(--accent-secondary);
+            color: white;
+            font-size: .65rem;
+            font-weight: 700;
+            padding: .25rem .5rem;
+            border-radius: 4px;
+        }
+        .set-status {
+            position: absolute;
+            bottom: .5rem;
+            left: .5rem;
+            padding: .2rem .45rem;
+            border-radius: 4px;
+            font-size: .6rem;
+            font-weight: 600;
+        }
+        .set-status.sealed { background: var(--accent-secondary); color: white; }
+        .set-status.built { background: var(--accent-quaternary); color: white; }
+        .set-status.boxed { background: var(--accent-tertiary); color: white; }
+        .set-status.incomplete { background: var(--negative); color: white; }
+        .photo-badge {
+            position: absolute;
+            bottom: .5rem;
+            right: .5rem;
+            background: rgba(0,0,0,0.6);
+            color: white;
+            font-size: .6rem;
+            padding: .2rem .4rem;
+            border-radius: 4px;
+        }
+        .set-info { padding: .9rem; }
+        .set-title {
+            font-weight: 600;
+            font-size: .85rem;
+            margin-bottom: .35rem;
+            line-height: 1.35;
+            color: var(--text-primary);
+        }
+        .set-meta {
+            display: flex;
+            flex-wrap: wrap;
+            gap: .5rem;
+            font-size: .7rem;
+            color: var(--text-secondary);
+        }
+        .set-theme {
+            font-size: .65rem;
+            color: var(--accent-secondary);
+            margin-top: .4rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: .03em;
+        }
+        .set-value {
+            font-size: .75rem;
+            color: var(--accent-primary);
+            margin-top: .35rem;
+            font-weight: 600;
+        }
+        .btn-delete {
+            position: absolute;
+            top: .5rem;
+            right: .5rem;
+            background: var(--negative);
+            color: white;
+            border: none;
+            width: 22px;
+            height: 22px;
+            border-radius: 50%;
+            cursor: pointer;
+            font-size: .7rem;
+            z-index: 10;
+            opacity: 0;
+            transition: opacity .2s;
+        }
+        .set-card:hover .btn-delete { opacity: 1; }
+        
+        /* Scanner Modal */
+        .scanner-modal {
+            position: fixed;
+            inset: 0;
+            background: rgba(0,0,0,0.6);
+            z-index: 1000;
+            display: none;
+            flex-direction: column;
+            backdrop-filter: blur(4px);
+        }
+        .scanner-modal.active { display: flex; }
+        .scanner-container {
+            background: var(--bg-card);
+            max-width: 520px;
+            width: 90%;
+            margin: auto;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+        }
+        .scanner-header {
+            padding: 1.1rem 1.5rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid var(--border);
+        }
+        .scanner-title {
+            font-family: 'Playfair Display', serif;
+            font-size: 1.15rem;
+            display: flex;
+            align-items: center;
+            gap: .5rem;
+        }
+        .scanner-close {
+            background: none;
+            border: none;
+            color: var(--text-secondary);
+            font-size: 1.5rem;
+            cursor: pointer;
+            line-height: 1;
+            padding: .25rem;
+        }
+        .scanner-close:hover { color: var(--text-primary); }
+        .scanner-body { padding: 1.5rem; }
+        .scanner-search { margin-bottom: 1.5rem; }
+        .scanner-search-row { display: flex; gap: .5rem; }
+        .scanner-search input {
+            flex: 1;
+            padding: .85rem 1rem;
+            background: var(--bg-input);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            color: var(--text-primary);
+            font-size: 1rem;
+        }
+        .scanner-search input:focus { outline: none; border-color: var(--accent-secondary); }
+        .scanner-search button {
+            padding: .85rem 1.25rem;
+            background: var(--accent-primary);
+            border: none;
+            border-radius: 8px;
+            color: white;
+            cursor: pointer;
+            font-size: .9rem;
+            font-weight: 600;
+            white-space: nowrap;
+        }
+        .scanner-search button:hover { background: #a91832; }
+        .scanner-search-hint {
+            font-size: .75rem;
+            color: var(--text-secondary);
+            margin-top: .6rem;
+        }
+        .scanner-result { min-height: 180px; }
+        .scanner-result-empty {
+            text-align: center;
+            padding: 2.5rem 1rem;
+            color: var(--text-secondary);
+        }
+        .scanner-result-empty-icon { font-size: 2.5rem; margin-bottom: .75rem; opacity: .4; }
+        .scanner-result-loading {
+            text-align: center;
+            padding: 2.5rem;
+            color: var(--text-secondary);
+        }
+        .scanner-result-loading::after {
+            content: '';
+            display: inline-block;
+            width: 18px;
+            height: 18px;
+            border: 2px solid var(--border);
+            border-top-color: var(--accent-primary);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin-left: .6rem;
+            vertical-align: middle;
+        }
+        @keyframes spin { to { transform: rotate(360deg); } }
+        .scanner-result-found {
+            display: grid;
+            grid-template-columns: 120px 1fr;
+            gap: 1.25rem;
+            background: var(--bg-input);
+            border-radius: 10px;
+            padding: 1.1rem;
+        }
+        .scanner-result-img {
+            aspect-ratio: 1;
+            background: var(--bg-card);
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+            border: 1px solid var(--border);
+        }
+        .scanner-result-img img { max-width: 90%; max-height: 90%; object-fit: contain; }
+        .scanner-result-info h3 {
+            font-family: 'Playfair Display', serif;
+            font-size: 1.05rem;
+            margin-bottom: .4rem;
+        }
+        .scanner-result-meta {
+            font-size: .8rem;
+            color: var(--text-secondary);
+            margin-bottom: .6rem;
+        }
+        .scanner-result-meta span { display: inline-block; margin-right: .85rem; }
+        .scanner-result-details {
+            font-size: .75rem;
+            color: var(--text-secondary);
+            margin-bottom: 1rem;
+        }
+        .scanner-result-actions { display: flex; gap: .5rem; flex-wrap: wrap; }
+        .scanner-result-actions button {
+            padding: .55rem .9rem;
+            border-radius: 6px;
+            font-size: .8rem;
+            font-weight: 600;
+            cursor: pointer;
+            border: none;
+        }
+        .scanner-result-actions .btn-add { background: var(--accent-quaternary); color: white; }
+        .scanner-result-actions .btn-add:hover { background: #185a38; }
+        .scanner-result-actions .btn-wish { background: var(--accent-tertiary); color: white; }
+        .scanner-result-actions .btn-wish:hover { background: #234a80; }
+        .scanner-result-error { padding: 2rem; text-align: center; color: var(--negative); }
+        
+        /* Modals */
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(0,0,0,0.5);
+            z-index: 1000;
+            overflow-y: auto;
+            padding: 1.5rem;
+            backdrop-filter: blur(4px);
+        }
+        .modal-overlay.active { display: flex; justify-content: center; align-items: flex-start; }
+        .modal {
+            background: var(--bg-card);
+            border-radius: 12px;
+            width: 100%;
+            max-width: 620px;
+            margin: auto;
+            border: 1px solid var(--border);
+            box-shadow: 0 20px 60px rgba(0,0,0,0.2);
+            max-height: calc(100vh - 3rem);
+            display: flex;
+            flex-direction: column;
+        }
+        .modal-header {
+            padding: 1.1rem 1.35rem;
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: var(--bg-card);
+            border-radius: 12px 12px 0 0;
+        }
+        .modal-title { font-family: 'Playfair Display', serif; font-size: 1.1rem; }
+        .modal-close {
+            background: none;
+            border: none;
+            font-size: 1.4rem;
+            cursor: pointer;
+            color: var(--text-secondary);
+            line-height: 1;
+        }
+        .modal-close:hover { color: var(--text-primary); }
+        .modal-body { padding: 1.35rem; overflow-y: auto; flex: 1; }
+        .modal-top {
+            display: grid;
+            grid-template-columns: 120px 1fr;
+            gap: 1.25rem;
+            margin-bottom: 1.35rem;
+        }
+        .modal-cover {
+            width: 100%;
+            aspect-ratio: 1;
+            background: var(--bg-input);
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+            border: 1px solid var(--border);
+        }
+        .modal-cover img { max-width: 90%; max-height: 90%; object-fit: contain; }
+        .modal-set-title { font-family: 'Playfair Display', serif; font-size: 1.2rem; margin-bottom: .45rem; }
+        .modal-set-meta { font-size: .85rem; color: var(--text-secondary); display: flex; flex-wrap: wrap; gap: .75rem; margin-bottom: .65rem; }
+        .modal-ref { font-size: .75rem; color: var(--text-secondary); background: var(--bg-input); padding: .6rem .85rem; border-radius: 6px; }
+        .modal-ref strong { color: var(--text-primary); }
+        
+        .form-section { margin-bottom: 1.35rem; }
+        .form-section-title {
+            font-size: .75rem;
+            font-weight: 600;
+            color: var(--accent-secondary);
+            text-transform: uppercase;
+            letter-spacing: .06em;
+            margin-bottom: .75rem;
+            padding-bottom: .5rem;
+            border-bottom: 1px solid var(--border);
+        }
+        .form-group { margin-bottom: .75rem; }
+        .form-label { display: block; font-size: .75rem; color: var(--text-secondary); margin-bottom: .35rem; font-weight: 500; }
+        .form-input, .form-select {
+            width: 100%;
+            padding: .6rem .85rem;
+            background: var(--bg-input);
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            color: var(--text-primary);
+            font-size: .85rem;
+            font-family: 'Inter', sans-serif;
+        }
+        .form-input:focus, .form-select:focus { outline: none; border-color: var(--accent-secondary); }
+        .form-textarea { min-height: 80px; resize: vertical; }
+        .form-row { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: .75rem; }
+        
+        .status-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: .5rem; }
+        .status-btn {
+            padding: .6rem .5rem;
+            background: var(--bg-input);
+            border: 2px solid var(--border);
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: .7rem;
+            text-align: center;
+            transition: all .2s;
+            color: var(--text-secondary);
+        }
+        .status-btn:hover { border-color: var(--accent-secondary); }
+        .status-btn.active.sealed { border-color: var(--accent-secondary); background: rgba(212,168,83,0.12); color: var(--accent-secondary); }
+        .status-btn.active.built { border-color: var(--accent-quaternary); background: rgba(30,113,69,0.12); color: var(--accent-quaternary); }
+        .status-btn.active.boxed { border-color: var(--accent-tertiary); background: rgba(43,87,151,0.12); color: var(--accent-tertiary); }
+        .status-btn.active.incomplete { border-color: var(--negative); background: rgba(196,30,58,0.12); color: var(--negative); }
+        
+        .photo-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: .5rem; margin-bottom: .75rem; }
+        .photo-item {
+            position: relative;
+            aspect-ratio: 1;
+            border-radius: 6px;
+            overflow: hidden;
+            cursor: pointer;
+            border: 2px solid transparent;
+            background: var(--bg-input);
+        }
+        .photo-item.main { border-color: var(--accent-secondary); }
+        .photo-item img { width: 100%; height: 100%; object-fit: cover; }
+        .photo-star {
+            position: absolute;
+            top: .25rem;
+            left: .25rem;
+            background: var(--accent-secondary);
+            color: white;
+            font-size: .5rem;
+            padding: .1rem .25rem;
+            border-radius: 3px;
+            font-weight: 700;
+        }
+        .photo-remove {
+            position: absolute;
+            top: .25rem;
+            right: .25rem;
+            background: var(--negative);
+            color: white;
+            border: none;
+            width: 18px;
+            height: 18px;
+            border-radius: 50%;
+            cursor: pointer;
+            font-size: .65rem;
+        }
+        .photo-actions { display: flex; gap: .5rem; }
+        .photo-btn {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: .5rem;
+            padding: .75rem;
+            background: var(--bg-input);
+            border: 2px dashed var(--border);
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: .8rem;
+            color: var(--text-secondary);
+        }
+        .photo-btn:hover { border-color: var(--accent-secondary); background: var(--bg-hover); }
+        .photo-btn input { display: none; }
+        
+        .modal-footer {
+            padding: 1rem 1.35rem;
+            border-top: 1px solid var(--border);
+            display: flex;
+            justify-content: space-between;
+            background: var(--bg-card);
+            border-radius: 0 0 12px 12px;
+        }
+        .modal-footer-left, .modal-footer-right { display: flex; gap: .5rem; }
+        .btn {
+            padding: .6rem 1.1rem;
+            border-radius: 6px;
+            font-size: .8rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all .2s;
+        }
+        .btn-secondary { background: var(--bg-input); border: 1px solid var(--border); color: var(--text-secondary); }
+        .btn-secondary:hover { background: var(--bg-hover); color: var(--text-primary); }
+        .btn-primary { background: var(--accent-primary); border: none; color: white; }
+        .btn-primary:hover { background: #a91832; }
+        .btn-danger { background: var(--negative); border: none; color: white; }
+        
+        @media (max-width: 768px) {
+            .header-content { flex-direction: column; gap: 1rem; }
+            .header-left { flex-direction: column; gap: .75rem; }
+            .nav-divider { display: none; }
+            .nav-links { width: 100%; justify-content: center; }
+            .header-actions { width: 100%; justify-content: center; flex-wrap: wrap; }
+            .stats-bar-inner { justify-content: center; text-align: center; }
+            .progress-container { width: 100%; }
+            .filters-inner { justify-content: center; }
+            .modal-top { grid-template-columns: 1fr; }
+            .modal-cover { max-width: 150px; margin: 0 auto; }
+            .sets-grid { grid-template-columns: repeat(2, 1fr); }
+            .status-grid { grid-template-columns: repeat(2, 1fr); }
+            .scanner-result-found { grid-template-columns: 1fr; }
+            .scanner-result-img { max-width: 120px; margin: 0 auto; }
+        }
+    </style>
+</head>
+<body data-theme="light">
+    <header class="header">
+        <div class="header-content">
+            <div class="header-left">
+                <div class="logo" onclick="window.location.href='index.html'">
+                    <div><div class="logo-text">LEGO</div><div class="logo-sub">BEAU Collections</div></div>
+                </div>
+                <div class="nav-divider"></div>
+                <nav class="nav-links">
+                    <a href="asterix.html" class="nav-link">Astérix</a>
+                    <a href="mortelle-adele.html" class="nav-link">Mortelle Adèle</a>
+                    <a href="tomtom-nana.html" class="nav-link">Tom-Tom et Nana</a>
+                    <a href="lego.html" class="nav-link active">LEGO</a>
+                </nav>
+            </div>
+            <div class="header-actions">
+                <div class="theme-toggle" onclick="toggleTheme()">
+                    <div class="theme-icon" id="icon-dark">🌙</div>
+                    <div class="theme-icon active" id="icon-light">☀️</div>
+                </div>
+                <button class="header-btn wishlist" onclick="openWishlistModal()">★ Wishlist <span class="btn-count" id="wishlist-count">0</span></button>
+                <button class="header-btn moc" onclick="openAddMocModal()">+ MOC</button>
+                <button class="header-btn primary" onclick="openScannerModal()">🔍 Ajouter Set</button>
+                <div class="user-menu">
+                    <div class="user-menu-btn" onclick="toggleUserDropdown()">
+                        <div class="user-menu-avatar">B</div>
+                        <span id="menu-name">Cockpit</span>
+                        <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg>
+                    </div>
+                    <div class="user-dropdown" id="user-dropdown">
+                        <div class="user-dropdown-header">
+                            <div class="user-dropdown-name" id="dropdown-name">Builder</div>
+                            <div class="user-dropdown-alias" id="dropdown-alias"></div>
+                        </div>
+                        <div class="user-dropdown-item" onclick="openStatsModal()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M18 20V10M12 20V4M6 20v-6"/></svg>Statistiques</div>
+                        <div class="user-dropdown-divider"></div>
+                        <div class="user-dropdown-item" onclick="exportPDF()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><path d="M14 2v6h6"/></svg>Export PDF</div>
+                        <div class="user-dropdown-item" onclick="exportExcel()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18M9 3v18"/></svg>Export Excel</div>
+                        <div class="user-dropdown-item" onclick="exportJSON()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M19 21H5a2 2 0 01-2-2V5a2 2 0 012-2h11l5 5v11a2 2 0 01-2 2z"/></svg>Sauvegarder</div>
+                        <div class="user-dropdown-item" onclick="importJSON()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M17 8l-5-5-5 5M12 3v12"/></svg>Restaurer</div>
+                        <div class="user-dropdown-divider"></div>
+                        <a href="index.html" class="user-dropdown-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/></svg>Hub Collections</a>
+                        <div class="user-dropdown-item danger" onclick="signOut()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4M16 17l5-5-5-5M21 12H9"/></svg>Déconnexion</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </header>
+    
+    <div class="stats-bar">
+        <div class="stats-bar-inner">
+            <div class="stat-item"><div class="stat-value" id="stat-sets">0</div><div class="stat-label">Sets</div></div>
+            <div class="stat-item"><div class="stat-value gold" id="stat-pieces">0</div><div class="stat-label">Pièces</div></div>
+            <div class="stat-item"><div class="stat-value blue" id="stat-figs">0</div><div class="stat-label">Minifigs</div></div>
+            <div class="stat-item"><div class="stat-value green" id="stat-mocs">0</div><div class="stat-label">MOCs</div></div>
+            <div class="stat-item price-item"><div class="stat-value" id="stat-value">0€</div><div class="stat-label">Valeur</div></div>
+            <div class="progress-container">
+                <div class="progress-label">Ma collection</div>
+                <div class="progress-bar"><div class="progress-fill" id="progress-fill" style="width:0%"></div></div>
+                <div class="progress-text" id="progress-text">0 sets</div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="filters">
+        <div class="filters-inner">
+            <label class="filter-check"><input type="checkbox" id="f-wishlist" onchange="render()"> ★ Wishlist</label>
+            <label class="filter-check"><input type="checkbox" id="f-sealed" onchange="render()"> 📦 Scellés</label>
+            <label class="filter-check"><input type="checkbox" id="f-built" onchange="render()"> 🏗️ Montés</label>
+            <select class="filter-select" id="f-theme" onchange="render()">
+                <option value="">Tous thèmes</option>
+                <option value="star-wars">Star Wars</option>
+                <option value="technic">Technic</option>
+                <option value="icons">Icons</option>
+                <option value="ideas">Ideas</option>
+                <option value="architecture">Architecture</option>
+                <option value="city">City</option>
+                <option value="speed-champions">Speed Champions</option>
+                <option value="harry-potter">Harry Potter</option>
+                <option value="marvel">Marvel</option>
+                <option value="creator">Creator</option>
+            </select>
+            <input type="text" class="search-input" id="search" placeholder="🔍 Rechercher..." oninput="render()">
+            <button class="filter-reset" onclick="resetFilters()">Reset</button>
+        </div>
+    </div>
+    
+    <main class="main">
+        <section class="useful-links">
+            <div class="useful-links-header">
+                <div class="useful-links-title">🔗 Liens utiles</div>
+            </div>
+            <div class="useful-links-grid">
+                <a href="https://www.lego.com" target="_blank" class="useful-link official">LEGO.com</a>
+                <a href="https://www.bricklink.com" target="_blank" class="useful-link">Bricklink</a>
+                <a href="https://brickset.com" target="_blank" class="useful-link">Brickset</a>
+                <a href="https://rebrickable.com" target="_blank" class="useful-link">Rebrickable</a>
+            </div>
+        </section>
+        
+        <div id="empty-state" class="empty-state">
+            <div class="empty-state-icon">🧱</div>
+            <div class="empty-state-title">Votre collection est vide</div>
+            <div class="empty-state-text">Recherchez un set LEGO par son numéro pour l'ajouter à votre collection.</div>
+            <button class="empty-state-btn" onclick="openScannerModal()">🔍 Ajouter mon premier set</button>
+        </div>
+        
+        <section class="section" id="sec-collection" style="display:none">
+            <div class="section-title">🧱 Ma Collection <span class="section-badge" id="badge-collection">0</span></div>
+            <div class="sets-grid" id="grid-collection"></div>
+        </section>
+        
+        <section class="section" id="sec-wishlist" style="display:none">
+            <div class="section-title">★ Wishlist <span class="section-badge blue" id="badge-wishlist">0</span></div>
+            <div class="sets-grid" id="grid-wishlist"></div>
+        </section>
+        
+        <section class="section" id="sec-mocs" style="display:none">
+            <div class="section-title">🎨 MOCs <span class="section-badge green" id="badge-mocs">0</span></div>
+            <div class="sets-grid" id="grid-mocs"></div>
+        </section>
+    </main>
+    
+    <!-- Scanner Modal -->
+    <div class="scanner-modal" id="scanner-modal">
+        <div class="scanner-container">
+            <div class="scanner-header">
+                <div class="scanner-title">🔍 Rechercher un set LEGO</div>
+                <button class="scanner-close" onclick="closeScannerModal()">×</button>
+            </div>
+            <div class="scanner-body">
+                <div class="scanner-search">
+                    <div class="scanner-search-row">
+                        <input type="text" id="search-input" placeholder="Numéro du set (ex: 75192)" maxlength="10" onkeypress="if(event.key==='Enter')searchSet()">
+                        <button onclick="searchSet()">Rechercher</button>
+                    </div>
+                    <div class="scanner-search-hint">Entrez le numéro officiel LEGO visible sur la boîte</div>
+                </div>
+                <div class="scanner-result" id="scanner-result">
+                    <div class="scanner-result-empty">
+                        <div class="scanner-result-empty-icon">📦</div>
+                        <div>Recherchez un set par son numéro</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Set Detail Modal -->
+    <div class="modal-overlay" id="modal-set">
+        <div class="modal">
+            <div class="modal-header">
+                <div class="modal-title" id="m-title">Set</div>
+                <button class="modal-close" onclick="closeModal('modal-set')">×</button>
+            </div>
+            <div class="modal-body">
+                <div class="modal-top">
+                    <div class="modal-cover"><img id="m-cover" src="" alt=""></div>
+                    <div>
+                        <div class="modal-set-title" id="m-name"></div>
+                        <div class="modal-set-meta">
+                            <span id="m-year"></span>
+                            <span id="m-pieces"></span>
+                            <span id="m-figs"></span>
+                        </div>
+                        <div class="modal-ref">
+                            <strong>Set:</strong> #<span id="m-num"></span> &nbsp;|&nbsp;
+                            <strong>Thème:</strong> <span id="m-theme"></span> &nbsp;|&nbsp;
+                            <strong>RRP:</strong> <span id="m-rrp" class="price-field"></span>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="form-section">
+                    <div class="form-section-title">Statut</div>
+                    <div class="status-grid">
+                        <button class="status-btn" data-st="sealed" onclick="setStatus('sealed')">📦 Scellé</button>
+                        <button class="status-btn" data-st="built" onclick="setStatus('built')">🏗️ Monté</button>
+                        <button class="status-btn" data-st="boxed" onclick="setStatus('boxed')">🗃️ Démonté</button>
+                        <button class="status-btn" data-st="incomplete" onclick="setStatus('incomplete')">❓ Incomplet</button>
+                    </div>
+                </div>
+                
+                <div class="form-section">
+                    <div class="form-section-title">Acquisition</div>
+                    <div class="form-row">
+                        <div class="form-group"><label class="form-label">Date</label><input type="date" class="form-input" id="f-date"></div>
+                        <div class="form-group"><label class="form-label">Canal</label><select class="form-select" id="f-channel"><option value="">--</option><option value="lego">LEGO Store</option><option value="amazon">Amazon</option><option value="bricklink">Bricklink</option><option value="vinted">Vinted/LBC</option><option value="gift">Cadeau</option><option value="other">Autre</option></select></div>
+                        <div class="form-group"><label class="form-label">Prix (€)</label><input type="number" class="form-input price-field" id="f-price" step="0.01"></div>
+                    </div>
+                </div>
+                
+                <div class="form-section">
+                    <div class="form-section-title">Valeur</div>
+                    <div class="form-row">
+                        <div class="form-group"><label class="form-label">Cote Bricklink (€)</label><input type="number" class="form-input price-field" id="f-bricklink" step="0.01"></div>
+                        <div class="form-group"><label class="form-label">Ma valeur (€)</label><input type="number" class="form-input price-field" id="f-value" step="0.01"></div>
+                    </div>
+                </div>
+                
+                <div class="form-section">
+                    <div class="form-section-title">Emplacement</div>
+                    <input type="text" class="form-input" id="f-location" placeholder="Vitrine salon, étagère bureau...">
+                </div>
+                
+                <div class="form-section">
+                    <div class="form-section-title">Mes photos</div>
+                    <div class="photo-grid" id="photo-grid"></div>
+                    <div class="photo-actions">
+                        <label class="photo-btn"><input type="file" accept="image/*" multiple onchange="addPhotos(event)">📁 Galerie</label>
+                        <label class="photo-btn"><input type="file" accept="image/*" capture="environment" onchange="addPhotos(event)">📷 Photo</label>
+                    </div>
+                </div>
+                
+                <div class="form-section">
+                    <div class="form-section-title">Notes</div>
+                    <textarea class="form-input form-textarea" id="f-notes" placeholder="Instructions, variantes, souvenirs..."></textarea>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <div class="modal-footer-left">
+                    <button class="btn btn-secondary" onclick="closeModal('modal-set')">Fermer</button>
+                    <button class="btn btn-danger" onclick="deleteSet()">Supprimer</button>
+                </div>
+                <div class="modal-footer-right">
+                    <button class="btn btn-primary" onclick="saveSet()">Enregistrer</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Add MOC Modal -->
+    <div class="modal-overlay" id="modal-moc">
+        <div class="modal">
+            <div class="modal-header"><div class="modal-title">Ajouter une MOC</div><button class="modal-close" onclick="closeModal('modal-moc')">×</button></div>
+            <div class="modal-body">
+                <div class="form-group"><label class="form-label">Nom *</label><input type="text" class="form-input" id="moc-name" placeholder="Ma création"></div>
+                <div class="form-row">
+                    <div class="form-group"><label class="form-label">Type</label><select class="form-select" id="moc-type"><option value="personal">MOC perso</option><option value="instructions">Instructions</option><option value="wip">En cours</option></select></div>
+                    <div class="form-group"><label class="form-label">Style</label><input type="text" class="form-input" id="moc-style" placeholder="Sci-Fi, Architecture..."></div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group"><label class="form-label">Pièces</label><input type="number" class="form-input" id="moc-pieces"></div>
+                    <div class="form-group"><label class="form-label">Coût (€)</label><input type="number" class="form-input" id="moc-cost" step="0.01"></div>
+                    <div class="form-group"><label class="form-label">Date</label><input type="date" class="form-input" id="moc-date"></div>
+                </div>
+                <div class="form-group"><label class="form-label">URL image</label><input type="text" class="form-input" id="moc-img"></div>
+                <div class="form-group"><label class="form-label">Notes</label><textarea class="form-input form-textarea" id="moc-notes"></textarea></div>
+            </div>
+            <div class="modal-footer"><button class="btn btn-secondary" onclick="closeModal('modal-moc')">Annuler</button><button class="btn btn-primary" onclick="addMoc()">Ajouter</button></div>
+        </div>
+    </div>
+    
+    <!-- Wishlist Modal -->
+    <div class="modal-overlay" id="modal-wishlist">
+        <div class="modal" style="max-width:520px">
+            <div class="modal-header"><div class="modal-title">★ Ma Wishlist</div><button class="modal-close" onclick="closeModal('modal-wishlist')">×</button></div>
+            <div class="modal-body" id="wishlist-content"></div>
+        </div>
+    </div>
+    
+    <!-- Stats Modal -->
+    <div class="modal-overlay" id="modal-stats">
+        <div class="modal" style="max-width:480px">
+            <div class="modal-header"><div class="modal-title">📊 Statistiques</div><button class="modal-close" onclick="closeModal('modal-stats')">×</button></div>
+            <div class="modal-body" id="stats-content"></div>
+        </div>
+    </div>
+
+<script>
+const SUPABASE_URL='https://hxrlybgpoqkrwgkgclhx.supabase.co';const SUPABASE_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imh4cmx5Ymdwb3Frcndna2djbGh4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDc3NzA4MjAsImV4cCI6MjA2MzM0NjgyMH0.2FqxZTJeJa7MIb35H3EGWdvSZQYJZCMzJUvMwVQcVuU';
+
+let collection=JSON.parse(localStorage.getItem('lego-collection')||'[]');
+let wishlist=JSON.parse(localStorage.getItem('lego-wishlist')||'[]');
+let mocs=JSON.parse(localStorage.getItem('lego-mocs')||'[]');
+let currentSetId=null;
+let currentTheme=localStorage.getItem('lego-theme')||'light';
+document.body.setAttribute('data-theme',currentTheme);updateThemeIcons();
+
+const themeLabels={'star-wars':'Star Wars','technic':'Technic','icons':'Icons','ideas':'Ideas','architecture':'Architecture','city':'City','speed-champions':'Speed Champions','harry-potter':'Harry Potter','marvel':'Marvel','creator':'Creator','other':'Autre'};
+
+function toggleTheme(){currentTheme=currentTheme==='light'?'dark':'light';document.body.setAttribute('data-theme',currentTheme);localStorage.setItem('lego-theme',currentTheme);updateThemeIcons()}
+function updateThemeIcons(){document.getElementById('icon-dark').classList.toggle('active',currentTheme==='dark');document.getElementById('icon-light').classList.toggle('active',currentTheme==='light')}
+
+function toggleUserDropdown(){document.getElementById('user-dropdown').classList.toggle('active')}
+document.addEventListener('click',e=>{if(!e.target.closest('.user-menu'))document.getElementById('user-dropdown').classList.remove('active')});
+function loadUserProfile(){const p=JSON.parse(localStorage.getItem('beau-user-profile')||'null');if(p){document.getElementById('dropdown-name').textContent=p.firstName||'Builder';document.getElementById('dropdown-alias').textContent=p.alias||'';if(p.showPrices===false)document.body.classList.add('hide-prices')}}
+function signOut(){localStorage.removeItem('beau-user-profile');window.location.href='index.html'}
+
+function esc(s){if(!s)return'';const d=document.createElement('div');d.textContent=s;return d.innerHTML}
+
+function render(){
+    const fWish=document.getElementById('f-wishlist').checked,fSealed=document.getElementById('f-sealed').checked,fBuilt=document.getElementById('f-built').checked,fTheme=document.getElementById('f-theme').value,search=document.getElementById('search').value.toLowerCase();
+    let filtered=collection.filter(s=>{if(fSealed&&s.status!=='sealed')return false;if(fBuilt&&s.status!=='built')return false;if(fTheme&&s.theme!==fTheme)return false;if(search&&!s.name.toLowerCase().includes(search)&&!s.num.includes(search))return false;return true});
+    let filteredWish=wishlist.filter(s=>{if(fTheme&&s.theme!==fTheme)return false;if(search&&!s.name.toLowerCase().includes(search)&&!s.num.includes(search))return false;return true});
+    const hasCol=filtered.length>0,hasWish=filteredWish.length>0||fWish,hasMocs=mocs.length>0;
+    document.getElementById('empty-state').style.display=(!hasCol&&!hasWish&&!hasMocs)?'block':'none';
+    document.getElementById('sec-collection').style.display=hasCol?'block':'none';
+    document.getElementById('sec-wishlist').style.display=(hasWish||fWish)?'block':'none';
+    document.getElementById('sec-mocs').style.display=hasMocs?'block':'none';
+    document.getElementById('badge-collection').textContent=filtered.length;
+    document.getElementById('badge-wishlist').textContent=filteredWish.length;
+    document.getElementById('badge-mocs').textContent=mocs.length;
+    document.getElementById('grid-collection').innerHTML=filtered.map(s=>createSetCard(s,false)).join('');
+    document.getElementById('grid-wishlist').innerHTML=filteredWish.map(s=>createSetCard(s,true)).join('');
+    document.getElementById('grid-mocs').innerHTML=mocs.map(m=>createMocCard(m)).join('');
+    updateStats();
+}
+
+function createSetCard(s,isWish){
+    const st=s.status?`<div class="set-status ${s.status}">${{sealed:'Scellé',built:'Monté',boxed:'Démonté',incomplete:'Incomplet'}[s.status]}</div>`:'';
+    const ph=(s.photos||[]).length?`<div class="photo-badge">📷${s.photos.length}</div>`:'';
+    return`<div class="set-card ${isWish?'in-wishlist':''}" onclick="${isWish?`openWishlistSet('${s.num}')`:`openSet('${s.num}')`}"><div class="set-cover"><img src="${esc(s.img)}" alt="${esc(s.name)}" onerror="this.style.display='none'"><div class="set-number">#${esc(s.num)}</div>${st}${ph}</div><div class="set-info"><div class="set-title">${esc(s.name)}</div><div class="set-meta"><span>${s.year||'?'}</span><span>🧱 ${s.pieces?s.pieces.toLocaleString():'?'}</span>${s.figs?`<span>👤 ${s.figs}</span>`:''}</div><div class="set-theme">${themeLabels[s.theme]||s.theme||''}</div>${s.value?`<div class="set-value price-field">~${s.value}€</div>`:''}</div></div>`;
+}
+
+function createMocCard(m){
+    return`<div class="set-card" onclick="openMoc('${m.id}')"><button class="btn-delete" onclick="event.stopPropagation();deleteMoc('${m.id}')">×</button><div class="set-cover"><img src="${esc(m.img)}" alt="${esc(m.name)}" onerror="this.style.display='none'"><div class="set-number" style="background:var(--accent-quaternary)">MOC</div></div><div class="set-info"><div class="set-title">${esc(m.name)}</div><div class="set-meta">${m.pieces?`<span>🧱 ${m.pieces}</span>`:''}${m.date?`<span>${m.date}</span>`:''}</div><div class="set-theme">${esc(m.style||m.type||'')}</div>${m.cost?`<div class="set-value price-field">~${m.cost}€</div>`:''}</div></div>`;
+}
+
+function updateStats(){
+    let pcs=0,figs=0,val=0;collection.forEach(s=>{pcs+=s.pieces||0;figs+=s.figs||0;val+=parseFloat(s.value)||parseFloat(s.bricklink)||s.rrp||0});
+    document.getElementById('stat-sets').textContent=collection.length;
+    document.getElementById('stat-pieces').textContent=pcs.toLocaleString();
+    document.getElementById('stat-figs').textContent=figs;
+    document.getElementById('stat-mocs').textContent=mocs.length;
+    document.getElementById('stat-value').textContent=val>0?Math.round(val)+'€':'0€';
+    document.getElementById('wishlist-count').textContent=wishlist.length;
+    document.getElementById('progress-fill').style.width=Math.min(collection.length*2,100)+'%';
+    document.getElementById('progress-text').textContent=collection.length+' sets';
+}
+
+function resetFilters(){['f-wishlist','f-sealed','f-built'].forEach(id=>document.getElementById(id).checked=false);document.getElementById('f-theme').value='';document.getElementById('search').value='';render()}
+
+function openScannerModal(){document.getElementById('scanner-modal').classList.add('active');document.getElementById('search-input').value='';document.getElementById('scanner-result').innerHTML=`<div class="scanner-result-empty"><div class="scanner-result-empty-icon">📦</div><div>Recherchez un set par son numéro</div></div>`;setTimeout(()=>document.getElementById('search-input').focus(),100)}
+function closeScannerModal(){document.getElementById('scanner-modal').classList.remove('active')}
+
+async function searchSet(){
+    const num=document.getElementById('search-input').value.trim();if(!num)return;
+    const res=document.getElementById('scanner-result');res.innerHTML=`<div class="scanner-result-loading">Recherche en cours</div>`;
+    try{
+        const resp=await fetch(`https://rebrickable.com/api/v3/lego/sets/${num}-1/?key=15ee999a3801ddd0f2ed7d2de9ae5e3e`);
+        if(resp.ok){
+            const d=await resp.json();const data={num,name:d.name,year:d.year,pieces:d.num_parts,figs:0,theme:guessTheme(d.name,d.theme_id),img:d.set_img_url,rrp:null};
+            const owned=collection.some(s=>s.num===num),inWish=wishlist.some(s=>s.num===num);
+            res.innerHTML=`<div class="scanner-result-found"><div class="scanner-result-img"><img src="${esc(data.img)}" alt="${esc(data.name)}" onerror="this.parentElement.innerHTML='📦'"></div><div class="scanner-result-info"><h3>${esc(data.name)}</h3><div class="scanner-result-meta"><span><strong>#${esc(data.num)}</strong></span><span>${data.year||'?'}</span><span>🧱 ${data.pieces?data.pieces.toLocaleString():'?'}</span></div><div class="scanner-result-details"><strong>Thème:</strong> ${themeLabels[data.theme]||data.theme||'?'}</div><div class="scanner-result-actions">${owned?'<span style="color:var(--positive);font-weight:600">✓ Dans ma collection</span>':`<button class="btn-add" onclick='addToCollection(${JSON.stringify(data).replace(/'/g,"&#39;")})'>+ Collection</button>`}${inWish?'<span style="color:var(--accent-tertiary);font-size:.8rem;margin-left:.5rem">★ Wishlist</span>':!owned?`<button class="btn-wish" onclick='addToWishlist(${JSON.stringify(data).replace(/'/g,"&#39;")})'>★ Wishlist</button>`:''}</div></div></div>`;
+        }else{res.innerHTML=`<div class="scanner-result-error">❌ Set #${esc(num)} non trouvé</div>`}
+    }catch(err){res.innerHTML=`<div class="scanner-result-error">❌ Erreur de recherche</div>`}
+}
+
+function guessTheme(n,id){n=(n||'').toLowerCase();if(n.includes('star wars')||id===158)return'star-wars';if(n.includes('technic')||id===1)return'technic';if(n.includes('architecture')||id===252)return'architecture';if(n.includes('harry potter')||id===246)return'harry-potter';if(n.includes('marvel')||id===696)return'marvel';if(n.includes('speed')||id===601)return'speed-champions';if(n.includes('ideas')||id===21)return'ideas';if(n.includes('creator')||id===22)return'creator';if(n.includes('city')||id===52)return'city';return'icons'}
+
+function addToCollection(data){if(collection.some(s=>s.num===data.num)){alert('Déjà dans votre collection');return}collection.push({...data,status:'',date:'',channel:'',price:'',bricklink:'',value:'',location:'',notes:'',photos:[],addedAt:new Date().toISOString()});wishlist=wishlist.filter(s=>s.num!==data.num);saveData();closeScannerModal();render()}
+function addToWishlist(data){if(wishlist.some(s=>s.num===data.num)||collection.some(s=>s.num===data.num)){alert('Déjà ajouté');return}wishlist.push({...data,addedAt:new Date().toISOString()});saveData();closeScannerModal();render()}
+
+function openSet(num){const s=collection.find(x=>x.num===num);if(!s)return;currentSetId=num;document.getElementById('m-title').textContent=`Set #${s.num}`;document.getElementById('m-name').textContent=s.name;document.getElementById('m-cover').src=s.img||'';document.getElementById('m-year').textContent=s.year||'?';document.getElementById('m-pieces').textContent=`🧱 ${s.pieces?s.pieces.toLocaleString():'?'}`;document.getElementById('m-figs').textContent=s.figs?`👤 ${s.figs}`:'';document.getElementById('m-num').textContent=s.num;document.getElementById('m-theme').textContent=themeLabels[s.theme]||s.theme||'?';document.getElementById('m-rrp').textContent=s.rrp?s.rrp+'€':'-';document.getElementById('f-date').value=s.date||'';document.getElementById('f-channel').value=s.channel||'';document.getElementById('f-price').value=s.price||'';document.getElementById('f-bricklink').value=s.bricklink||'';document.getElementById('f-value').value=s.value||'';document.getElementById('f-location').value=s.location||'';document.getElementById('f-notes').value=s.notes||'';document.querySelectorAll('.status-btn').forEach(b=>b.classList.remove('active'));if(s.status){const btn=document.querySelector(`.status-btn[data-st="${s.status}"]`);if(btn)btn.classList.add('active',s.status)}renderPhotos(s);openModal('modal-set')}
+
+function openWishlistSet(num){const s=wishlist.find(x=>x.num===num);if(s&&confirm(`Ajouter "${s.name}" à votre collection ?`))addToCollection(s)}
+function setStatus(st){document.querySelectorAll('.status-btn').forEach(b=>{b.classList.remove('active','sealed','built','boxed','incomplete')});const btn=document.querySelector(`.status-btn[data-st="${st}"]`);if(btn)btn.classList.add('active',st)}
+function renderPhotos(s){const ph=s?.photos||[],main=s?.mainPhoto||0;document.getElementById('photo-grid').innerHTML=ph.map((p,i)=>`<div class="photo-item ${i===main?'main':''}" onclick="setMainPhoto(${i})"><img src="${p}" alt="">${i===main?'<span class="photo-star">★</span>':''}<button class="photo-remove" onclick="event.stopPropagation();removePhoto(${i})">×</button></div>`).join('')}
+function setMainPhoto(i){const s=collection.find(x=>x.num===currentSetId);if(s){s.mainPhoto=i;renderPhotos(s)}}
+function addPhotos(e){const files=e.target.files;if(!files.length)return;const s=collection.find(x=>x.num===currentSetId);if(!s)return;if(!s.photos)s.photos=[];Array.from(files).forEach(f=>{const r=new FileReader();r.onload=ev=>{s.photos.push(ev.target.result);renderPhotos(s)};r.readAsDataURL(f)});e.target.value=''}
+function removePhoto(i){const s=collection.find(x=>x.num===currentSetId);if(s?.photos){s.photos.splice(i,1);if(s.mainPhoto>=i)s.mainPhoto=Math.max(0,(s.mainPhoto||0)-1);renderPhotos(s)}}
+function saveSet(){const s=collection.find(x=>x.num===currentSetId);if(!s)return;const btn=document.querySelector('.status-btn.active');s.status=btn?.dataset.st||'';s.date=document.getElementById('f-date').value;s.channel=document.getElementById('f-channel').value;s.price=document.getElementById('f-price').value;s.bricklink=document.getElementById('f-bricklink').value;s.value=document.getElementById('f-value').value;s.location=document.getElementById('f-location').value;s.notes=document.getElementById('f-notes').value;saveData();closeModal('modal-set');render()}
+function deleteSet(){if(!confirm('Supprimer ce set ?'))return;collection=collection.filter(s=>s.num!==currentSetId);saveData();closeModal('modal-set');render()}
+
+function openAddMocModal(){openModal('modal-moc')}
+function addMoc(){const name=document.getElementById('moc-name').value.trim();if(!name){alert('Nom requis');return}mocs.push({id:'m'+Date.now(),name,type:document.getElementById('moc-type').value,style:document.getElementById('moc-style').value,pieces:parseInt(document.getElementById('moc-pieces').value)||null,cost:parseFloat(document.getElementById('moc-cost').value)||null,date:document.getElementById('moc-date').value,img:document.getElementById('moc-img').value,notes:document.getElementById('moc-notes').value});saveData();['moc-name','moc-style','moc-pieces','moc-cost','moc-date','moc-img','moc-notes'].forEach(id=>document.getElementById(id).value='');closeModal('modal-moc');render()}
+function openMoc(id){const m=mocs.find(x=>x.id===id);if(m)alert(`MOC: ${m.name}\nType: ${m.type||'-'}\nPièces: ${m.pieces||'?'}`)}
+function deleteMoc(id){if(!confirm('Supprimer cette MOC ?'))return;mocs=mocs.filter(m=>m.id!==id);saveData();render()}
+
+function openWishlistModal(){const c=document.getElementById('wishlist-content');if(!wishlist.length){c.innerHTML='<div style="text-align:center;padding:2rem;color:var(--text-secondary)">Wishlist vide<br><br><button class="btn btn-primary" onclick="closeModal(\'modal-wishlist\');openScannerModal()">🔍 Rechercher</button></div>'}else{c.innerHTML=wishlist.map(s=>`<div style="display:flex;align-items:center;gap:1rem;padding:.75rem;background:var(--bg-input);border-radius:8px;margin-bottom:.5rem"><img src="${esc(s.img)}" style="width:55px;height:45px;object-fit:contain;border-radius:6px;background:var(--bg-card)" onerror="this.style.display='none'"><div style="flex:1"><div style="font-weight:600;font-size:.85rem">${esc(s.name)}</div><div style="font-size:.7rem;color:var(--text-secondary)">#${s.num} • ${s.year||'?'}</div></div><button onclick="addToCollection(${JSON.stringify(s).replace(/"/g,'&quot;')})" style="background:var(--positive);color:white;border:none;padding:.4rem .6rem;border-radius:6px;cursor:pointer;font-size:.75rem;font-weight:600">+</button><button onclick="removeFromWishlist('${s.num}')" style="background:var(--negative);color:white;border:none;padding:.4rem .5rem;border-radius:6px;cursor:pointer;font-size:.75rem">×</button></div>`).join('')}openModal('modal-wishlist')}
+function removeFromWishlist(num){wishlist=wishlist.filter(s=>s.num!==num);saveData();openWishlistModal();render()}
+
+function openStatsModal(){const th={};collection.forEach(s=>{const t=s.theme||'other';if(!th[t])th[t]={count:0,pieces:0};th[t].count++;th[t].pieces+=s.pieces||0});let h=`<div style="text-align:center;margin-bottom:1.5rem"><div style="font-size:2.5rem;font-weight:700;color:var(--accent-primary)">${collection.length}</div><div style="color:var(--text-secondary);font-size:.85rem">sets dans votre collection</div></div>`;if(Object.keys(th).length){h+='<div style="font-weight:600;margin-bottom:.75rem;font-size:.9rem">Par thème</div>';Object.entries(th).sort((a,b)=>b[1].count-a[1].count).forEach(([t,d])=>{h+=`<div style="display:flex;justify-content:space-between;padding:.6rem 0;border-bottom:1px solid var(--border);font-size:.85rem"><span>${themeLabels[t]||t}</span><span style="color:var(--text-secondary)">${d.count} sets • ${d.pieces.toLocaleString()} pcs</span></div>`})}document.getElementById('stats-content').innerHTML=h;openModal('modal-stats');toggleUserDropdown()}
+
+function openModal(id){document.getElementById(id).classList.add('active')}
+function closeModal(id){document.getElementById(id).classList.remove('active')}
+function saveData(){localStorage.setItem('lego-collection',JSON.stringify(collection));localStorage.setItem('lego-wishlist',JSON.stringify(wishlist));localStorage.setItem('lego-mocs',JSON.stringify(mocs))}
+
+function exportJSON(){const data={collection,wishlist,mocs,exportDate:new Date().toISOString()};const blob=new Blob([JSON.stringify(data,null,2)],{type:'application/json'});const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=`lego-${new Date().toISOString().slice(0,10)}.json`;a.click();toggleUserDropdown()}
+function importJSON(){const inp=document.createElement('input');inp.type='file';inp.accept='.json';inp.onchange=e=>{const f=e.target.files[0];if(!f)return;const r=new FileReader();r.onload=ev=>{try{const d=JSON.parse(ev.target.result);if(!confirm('Importer ?'))return;if(d.collection)collection=d.collection;if(d.wishlist)wishlist=d.wishlist;if(d.mocs)mocs=d.mocs;saveData();render();alert('Import réussi !')}catch(err){alert('Erreur')}};r.readAsText(f)};inp.click();toggleUserDropdown()}
+function exportPDF(){const{jsPDF}=window.jspdf;const doc=new jsPDF();doc.setFontSize(18);doc.text('Ma Collection LEGO',14,20);doc.setFontSize(10);doc.text(`Export: ${new Date().toLocaleDateString('fr-FR')}`,14,28);const rows=collection.map(s=>[s.num,s.name,s.year||'',s.pieces||'',s.status||'',s.value?s.value+'€':'']);doc.autoTable({head:[['#','Nom','Année','Pcs','Statut','Valeur']],body:rows,startY:35,styles:{fontSize:8}});doc.save('collection-lego.pdf');toggleUserDropdown()}
+function exportExcel(){const data=collection.map(s=>({Numéro:s.num,Nom:s.name,Thème:themeLabels[s.theme]||'',Année:s.year||'',Pièces:s.pieces||'',Statut:s.status||'',Valeur:s.value||''}));const ws=XLSX.utils.json_to_sheet(data);const wb=XLSX.utils.book_new();XLSX.utils.book_append_sheet(wb,ws,'Collection');XLSX.writeFile(wb,'collection-lego.xlsx');toggleUserDropdown()}
+
+document.querySelectorAll('.modal-overlay').forEach(m=>{m.addEventListener('click',e=>{if(e.target===m)closeModal(m.id)})});
+document.getElementById('scanner-modal').addEventListener('click',e=>{if(e.target.id==='scanner-modal')closeScannerModal()});
+document.addEventListener('keydown',e=>{if(e.key==='Escape'){closeScannerModal();document.querySelectorAll('.modal-overlay.active').forEach(m=>closeModal(m.id))}});
+
+loadUserProfile();render();
+</script>
+</body>
+</html>

@@ -1,0 +1,1544 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ma Collection Astérix | BEAU Collections</title>
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;500;600&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.1/jspdf.plugin.autotable.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/quagga/0.12.1/quagga.min.js"></script>
+    <style>
+        :root{--bg-deep:#050d0a;--bg-card:#0a1915;--bg-hover:#142623;--bg-input:#1A2E29;--text-primary:#E8E8E8;--text-secondary:#A8B5B0;--accent-copper:#C4785A;--accent-gold:#C4A55A;--border:#142e26;--positive:#5B8C6A;--negative:#C45C4A;--film-badge:#9333EA;--wiki-blue:#3366CC;--allocine-yellow:#FECC00}
+        [data-theme="light"]{--bg-deep:#F5F2EB;--bg-card:#FFFFFF;--bg-hover:#E8E5DE;--bg-input:#F0EDE6;--text-primary:#1A2E29;--text-secondary:#5A6B66;--border:#D4D0C8}
+        *{margin:0;padding:0;box-sizing:border-box}
+        body{font-family:'Inter',sans-serif;background:var(--bg-deep);color:var(--text-primary);min-height:100vh;line-height:1.6;transition:background .3s,color .3s}
+        body.hide-prices .price-item,body.hide-prices .price-field,body.hide-prices .version-price{display:none!important}
+        .header{background:var(--bg-card);border-bottom:1px solid var(--border);padding:1rem 2rem;position:sticky;top:0;z-index:100}
+        .header-content{max-width:1600px;margin:0 auto;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:1rem}
+        .logo{cursor:pointer}
+        .logo-text{font-family:'Playfair Display',serif;font-size:1.5rem;font-weight:500;letter-spacing:.1em}
+        .logo-sub{font-size:.7rem;color:var(--text-secondary);letter-spacing:.15em;text-transform:uppercase}
+        .nav-links{display:flex;align-items:center;gap:.5rem;margin-left:1rem;padding-left:1rem;border-left:1px solid var(--border)}
+        .nav-link{padding:.4rem .6rem;background:var(--bg-input);border:1px solid var(--border);border-radius:5px;color:var(--text-secondary);font-size:.7rem;text-decoration:none;transition:all .2s;display:flex;align-items:center;gap:.3rem}
+        .nav-link:hover{background:var(--bg-hover);color:var(--text-primary);border-color:var(--accent-copper)}
+        .nav-link.active{background:var(--accent-copper);border-color:var(--accent-copper);color:white}
+        .user-menu{position:relative;margin-left:.5rem}
+        .user-menu-btn{display:flex;align-items:center;gap:.4rem;background:var(--bg-input);border:1px solid var(--border);padding:.35rem .6rem .35rem .35rem;border-radius:20px;cursor:pointer;transition:all .2s;font-size:.75rem}
+        .user-menu-btn:hover{border-color:var(--accent-copper)}
+        .user-menu-avatar{width:24px;height:24px;background:var(--accent-copper);border-radius:50%;display:flex;align-items:center;justify-content:center;font-family:'Playfair Display',serif;font-size:.7rem;color:white}
+        .user-dropdown{position:absolute;top:calc(100% + 6px);right:0;background:var(--bg-card);border:1px solid var(--border);border-radius:6px;min-width:160px;box-shadow:0 8px 24px rgba(0,0,0,.3);display:none;overflow:hidden;z-index:200}
+        .user-dropdown.active{display:block}
+        .user-dropdown-header{padding:.75rem;border-bottom:1px solid var(--border);text-align:center}
+        .user-dropdown-name{font-weight:500;font-size:.85rem}
+        .user-dropdown-alias{font-size:.7rem;color:var(--text-secondary)}
+        .user-dropdown-item{padding:.6rem .75rem;font-size:.75rem;cursor:pointer;transition:background .2s;display:flex;align-items:center;gap:.5rem;color:var(--text-primary);text-decoration:none}
+        .user-dropdown-item:hover{background:var(--bg-hover)}
+        .user-dropdown-item svg{width:16px;height:16px;stroke:var(--accent-copper);opacity:.85;margin-right:.5rem}
+        .user-dropdown-item.danger{color:var(--negative)}
+        .user-dropdown-item.danger svg{stroke:var(--negative)}
+        .user-dropdown-divider{height:1px;background:var(--border);margin:.5rem 0}
+        .cockpit-icon{color:var(--text-secondary)}
+        .header-actions{display:flex;align-items:center;gap:.75rem;flex-wrap:wrap}
+        .theme-toggle{background:var(--bg-input);border:1px solid var(--border);border-radius:20px;padding:.35rem;cursor:pointer;display:flex;gap:.25rem}
+        .theme-icon{width:24px;height:24px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:.75rem;transition:all .3s}
+        .theme-icon.active{background:var(--accent-copper)}
+        .header-btn{background:var(--bg-input);border:1px solid var(--border);color:var(--text-primary);padding:.5rem .75rem;border-radius:6px;cursor:pointer;font-size:.8rem;display:flex;align-items:center;gap:.35rem;transition:all .2s}
+        .header-btn:hover{background:var(--bg-hover)}
+        .header-btn.primary{background:var(--accent-copper);border-color:var(--accent-copper);color:white}
+        .header-btn.wishlist{background:var(--accent-gold);border-color:var(--accent-gold);color:var(--bg-deep)}
+        .dropdown{position:relative;display:inline-block}
+        .dropdown-content{display:none;position:absolute;right:0;top:100%;background:var(--bg-card);border:1px solid var(--border);border-radius:6px;min-width:120px;z-index:200;margin-top:.25rem}
+        .dropdown:hover .dropdown-content{display:block}
+        .dropdown-item{display:block;padding:.5rem .75rem;font-size:.75rem;cursor:pointer;color:var(--text-primary);border:none;background:none;width:100%;text-align:left}
+        .dropdown-item:hover{background:var(--bg-hover)}
+        .wiki-link{display:inline-flex;align-items:center;justify-content:center;width:20px;height:20px;background:var(--wiki-blue);border-radius:3px;color:white;text-decoration:none;font-size:.6rem;font-weight:bold;margin-left:.25rem}
+        .wiki-link:hover{opacity:.8}
+        .allocine-link{display:inline-flex;align-items:center;padding:.15rem .35rem;background:var(--allocine-yellow);border-radius:3px;color:#000;text-decoration:none;font-size:.55rem;font-weight:bold;margin-left:.25rem}
+        .film-item{display:flex;justify-content:space-between;align-items:center;padding:.4rem 0;border-bottom:1px solid var(--border)}
+        .film-item:last-child{border-bottom:none}
+        .film-seen-btn{padding:.2rem .4rem;border-radius:3px;font-size:.6rem;cursor:pointer;border:1px solid var(--border);background:var(--bg-input);color:var(--text-secondary)}
+        .film-seen-btn.seen{background:var(--positive);border-color:var(--positive);color:white}
+        .news-section{background:var(--bg-card);border:1px solid var(--border);border-radius:10px;padding:1rem;margin-bottom:1.5rem}
+        .news-title{font-family:'Playfair Display',serif;font-size:1rem;margin-bottom:.75rem;color:var(--accent-copper)}
+        .news-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:.75rem}
+        .news-card{background:var(--bg-input);border-radius:6px;padding:.75rem}
+        .news-card-title{font-weight:500;font-size:.8rem;margin-bottom:.25rem}
+        .news-card-excerpt{font-size:.7rem;color:var(--text-secondary)}
+        .news-card a{color:var(--accent-copper)}
+        .album-card.in-wishlist::before{content:'♥';position:absolute;top:.5rem;right:2.5rem;background:var(--negative);color:white;width:20px;height:20px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:.6rem;z-index:5}
+        .toggle-btn.active-wish{background:var(--accent-gold);border-color:var(--accent-gold);color:var(--bg-deep)}
+        .stats-bar{padding:1rem 2rem;background:var(--bg-card);border-bottom:1px solid var(--border)}
+        .stats-bar-inner{max-width:1600px;margin:0 auto;display:flex;gap:1.5rem;flex-wrap:wrap;align-items:center}
+        .stat-item{display:flex;flex-direction:column}
+        .stat-value{font-family:'Playfair Display',serif;font-size:1.5rem;font-weight:500;color:var(--accent-copper)}
+        .stat-label{font-size:.7rem;color:var(--text-secondary);text-transform:uppercase;letter-spacing:.1em}
+        .progress-container{flex:1;min-width:200px;display:flex;align-items:center;gap:1rem}
+        .progress-bar{flex:1;height:8px;background:var(--bg-input);border-radius:4px;overflow:hidden}
+        .progress-fill{height:100%;background:linear-gradient(90deg,var(--accent-copper),var(--accent-gold));border-radius:4px;transition:width .5s ease}
+        .progress-text{font-size:.875rem;color:var(--text-secondary);min-width:50px;text-align:right}
+        .filters{padding:.75rem 2rem;background:var(--bg-deep);border-bottom:1px solid var(--border)}
+        .filters-inner{max-width:1600px;margin:0 auto;display:flex;gap:.4rem;flex-wrap:wrap;align-items:center}
+        .filter-btn{padding:.4rem .75rem;background:var(--bg-card);border:1px solid var(--border);border-radius:5px;color:var(--text-secondary);font-size:.75rem;cursor:pointer;transition:all .2s}
+        .filter-btn:hover{background:var(--bg-hover);color:var(--text-primary)}
+        .filter-btn.active{background:var(--accent-copper);border-color:var(--accent-copper);color:white}
+        .filter-select{padding:.4rem .75rem;background:var(--bg-card);border:1px solid var(--border);border-radius:5px;color:var(--text-primary);font-size:.75rem;cursor:pointer}
+        .filter-select:focus{outline:none;border-color:var(--accent-copper)}
+        .filter-group{display:flex;gap:.5rem;align-items:center;flex-wrap:wrap}
+        .filter-check{display:flex;align-items:center;gap:.3rem;font-size:.75rem;color:var(--text-secondary);cursor:pointer;padding:.3rem .5rem;background:var(--bg-card);border:1px solid var(--border);border-radius:4px;transition:all .2s}
+        .filter-check:has(input:checked){background:var(--accent-copper);border-color:var(--accent-copper);color:white}
+        .filter-check input{accent-color:var(--accent-copper)}
+        .filter-reset{padding:.4rem .6rem;background:transparent;border:1px solid var(--border);border-radius:5px;color:var(--text-secondary);font-size:.7rem;cursor:pointer}
+        .filter-reset:hover{background:var(--bg-hover);color:var(--text-primary)}
+        .useful-links{background:var(--bg-card);border:1px solid var(--border);border-radius:10px;padding:1rem;margin-bottom:1.5rem}
+        .useful-links-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:.75rem}
+        .useful-links-title{font-family:'Playfair Display',serif;font-size:1rem;color:var(--accent-copper)}
+        .useful-links-grid{display:flex;flex-wrap:wrap;gap:.5rem}
+        .useful-link{display:inline-flex;align-items:center;gap:.35rem;padding:.4rem .6rem;background:var(--bg-input);border:1px solid var(--border);border-radius:5px;color:var(--text-primary);text-decoration:none;font-size:.75rem;transition:all .2s}
+        .useful-link:hover{background:var(--bg-hover);border-color:var(--accent-copper)}
+        .useful-link.official{border-color:var(--accent-gold);background:rgba(196,165,90,.1)}
+        .add-link-btn{padding:.4rem .6rem;background:var(--bg-input);border:1px dashed var(--border);border-radius:5px;color:var(--text-secondary);font-size:.7rem;cursor:pointer}
+        .add-link-btn:hover{border-color:var(--accent-copper);color:var(--text-primary)}
+        .version-item{display:flex;justify-content:space-between;align-items:center;padding:.5rem;background:var(--bg-input);border-radius:5px;margin-bottom:.5rem}
+        .version-info{display:flex;flex-direction:column;gap:.15rem}
+        .version-lang{font-weight:500;font-size:.8rem}
+        .version-note{font-size:.7rem;color:var(--text-secondary);font-style:italic}
+        .version-remove{background:none;border:none;color:var(--negative);cursor:pointer;font-size:1rem}
+        .reference-info{background:var(--bg-input);border:1px solid var(--border);border-radius:6px;padding:.75rem;margin-top:.75rem;font-size:.75rem}
+        .reference-info-title{font-weight:600;color:var(--accent-copper);margin-bottom:.5rem;font-size:.7rem;text-transform:uppercase;letter-spacing:.05em}
+        .reference-info-row{display:flex;gap:1.5rem;flex-wrap:wrap}
+        .reference-info-item{display:flex;flex-direction:column;gap:.1rem}
+        .reference-info-label{color:var(--text-secondary);font-size:.65rem}
+        .reference-info-value{color:var(--text-primary)}
+        .search-input{flex:1;min-width:180px;padding:.4rem .75rem;background:var(--bg-input);border:1px solid var(--border);border-radius:5px;color:var(--text-primary);font-size:.8rem}
+        .search-input:focus{outline:none;border-color:var(--accent-copper)}
+        .search-input::placeholder{color:var(--text-secondary)}
+        .main{max-width:1600px;margin:0 auto;padding:1.5rem 2rem}
+        .section-title{font-family:'Playfair Display',serif;font-size:1.1rem;margin-bottom:1rem;display:flex;align-items:center;gap:.5rem}
+        .section-badge{background:var(--accent-copper);color:white;font-size:.7rem;padding:.1rem .5rem;border-radius:4px;font-family:'Inter',sans-serif}
+        .albums-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:1.25rem;margin-bottom:2rem}
+        .album-card{background:var(--bg-card);border:1px solid var(--border);border-radius:10px;overflow:hidden;transition:all .3s ease;cursor:pointer}
+        .album-card:hover{transform:translateY(-3px);border-color:var(--accent-copper);box-shadow:0 6px 24px rgba(196,120,90,.15)}
+        .album-card.owned{border-color:var(--positive)}
+        .album-card.not-owned{opacity:.7}
+        .album-card.not-owned:hover{opacity:1}
+        .album-card.special{border-color:var(--accent-gold)}
+        .album-cover{position:relative;aspect-ratio:3/4;overflow:hidden;background:var(--bg-hover)}
+        .album-cover img{width:100%;height:100%;object-fit:cover;transition:transform .3s}
+        .album-card:hover .album-cover img{transform:scale(1.05)}
+        .album-badges{position:absolute;top:.5rem;left:.5rem;right:.5rem;display:flex;justify-content:space-between;align-items:flex-start}
+        .album-number{background:var(--bg-deep);color:var(--accent-copper);padding:.2rem .5rem;border-radius:4px;font-size:.7rem;font-weight:600}
+        .album-number.special{background:var(--accent-gold);color:var(--bg-deep)}
+        .album-status{width:26px;height:26px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:.7rem;font-weight:bold}
+        .album-status.owned{background:var(--positive);color:white}
+        .album-status.not-owned{background:var(--bg-input);border:2px dashed var(--text-secondary)}
+        .album-film-badge{position:absolute;bottom:.5rem;left:.5rem;background:var(--film-badge);color:white;padding:.2rem .5rem;border-radius:4px;font-size:.65rem;font-weight:600;display:flex;align-items:center;gap:.25rem}
+        .album-read-badge{position:absolute;bottom:.5rem;right:.5rem;padding:.2rem .5rem;border-radius:4px;font-size:.65rem;font-weight:600}
+        .album-read-badge.read{background:var(--positive);color:white}
+        .album-read-badge.to-read{background:var(--accent-gold);color:var(--bg-deep)}
+        .photo-count{position:absolute;top:.5rem;right:2.5rem;background:rgba(5,13,10,.9);color:var(--text-primary);padding:.15rem .4rem;border-radius:4px;font-size:.65rem}
+        .album-info{padding:.75rem}
+        .album-title{font-family:'Playfair Display',serif;font-size:.9rem;font-weight:500;margin-bottom:.35rem;line-height:1.3}
+        .album-meta{font-size:.7rem;color:var(--text-secondary);display:flex;flex-wrap:wrap;gap:.35rem;margin-bottom:.35rem}
+        .album-year{background:var(--bg-input);padding:.1rem .4rem;border-radius:3px}
+        .album-authors{color:var(--accent-gold)}
+        .album-edition{font-size:.65rem;color:var(--text-secondary);font-style:italic;margin-bottom:.35rem}
+        .album-value{font-size:.7rem;color:var(--accent-copper);font-weight:500}
+        .album-condition{margin-top:.5rem;padding-top:.5rem;border-top:1px solid var(--border);display:flex;justify-content:space-between;align-items:center}
+        .condition-badge{font-size:.65rem;padding:.15rem .5rem;border-radius:4px}
+        .condition-mint{background:rgba(91,140,106,.2);color:var(--positive)}
+        .condition-good{background:rgba(196,165,90,.2);color:var(--accent-gold)}
+        .condition-fair{background:rgba(196,120,90,.2);color:var(--accent-copper)}
+        .condition-poor{background:rgba(196,92,74,.2);color:var(--negative)}
+        .modal-overlay{display:none;position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(5,13,10,.95);z-index:1000;overflow-y:auto;padding:1rem}
+        [data-theme="light"] .modal-overlay{background:rgba(245,242,235,.95)}
+        .modal-overlay.active{display:flex;justify-content:center;align-items:flex-start}
+        .modal{background:var(--bg-card);border:1px solid var(--border);border-radius:12px;max-width:700px;width:100%;margin:1rem auto;max-height:90vh;overflow-y:auto}
+        .modal-header{padding:1rem 1.25rem;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:center;position:sticky;top:0;background:var(--bg-card);z-index:10}
+        .modal-title{font-family:'Playfair Display',serif;font-size:1.1rem;font-weight:500}
+        .modal-close{background:none;border:none;color:var(--text-secondary);font-size:1.5rem;cursor:pointer;padding:.25rem;line-height:1}
+        .modal-close:hover{color:var(--text-primary)}
+        .modal-body{padding:1.25rem}
+        .modal-top-section{display:grid;grid-template-columns:160px 1fr;gap:1.25rem;margin-bottom:1.25rem}
+        .modal-cover{width:100%;border-radius:8px}
+        .modal-album-title{font-family:'Playfair Display',serif;font-size:1.25rem;margin-bottom:.5rem}
+        .modal-album-meta{font-size:.8rem;color:var(--text-secondary);margin-bottom:.75rem}
+        .modal-album-meta span{margin-right:1rem}
+        .synopsis-box{background:var(--bg-input);border-radius:6px;padding:.75rem;font-size:.8rem;color:var(--text-secondary);line-height:1.5;max-height:100px;overflow-y:auto}
+        .film-info{background:rgba(147,51,234,.1);border:1px solid var(--film-badge);border-radius:6px;padding:.75rem;margin-top:.75rem;font-size:.75rem}
+        .film-info-title{color:var(--film-badge);font-weight:600;margin-bottom:.5rem;display:flex;align-items:center;gap:.35rem}
+        .film-link{display:block;color:var(--accent-copper);text-decoration:none;margin-top:.25rem;font-size:.7rem}
+        .film-link:hover{text-decoration:underline}
+        .form-section{border-top:1px solid var(--border);padding-top:1rem;margin-top:1rem}
+        .form-section-title{font-size:.8rem;font-weight:600;color:var(--text-secondary);text-transform:uppercase;letter-spacing:.05em;margin-bottom:.75rem}
+        .form-group{margin-bottom:1rem}
+        .form-label{display:block;font-size:.75rem;color:var(--text-secondary);margin-bottom:.35rem}
+        .form-input,.form-select{width:100%;padding:.6rem .75rem;background:var(--bg-input);border:1px solid var(--border);border-radius:6px;color:var(--text-primary);font-size:.8rem;font-family:'Inter',sans-serif}
+        .form-input:focus,.form-select:focus{outline:none;border-color:var(--accent-copper)}
+        .form-textarea{min-height:70px;resize:vertical}
+        .form-row{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:.75rem}
+        .form-row-3{grid-template-columns:repeat(3,1fr)}
+        .form-toggle{display:flex;gap:.5rem}
+        .toggle-btn{flex:1;padding:.6rem;background:var(--bg-input);border:1px solid var(--border);border-radius:6px;color:var(--text-secondary);cursor:pointer;transition:all .2s;font-size:.8rem}
+        .toggle-btn:hover{background:var(--bg-hover)}
+        .toggle-btn.active{background:var(--positive);border-color:var(--positive);color:white}
+        .toggle-btn.active-no{background:var(--negative);border-color:var(--negative);color:white}
+        .condition-options,.read-options{display:grid;grid-template-columns:repeat(4,1fr);gap:.4rem}
+        .read-options{grid-template-columns:repeat(2,1fr)}
+        .condition-btn,.read-btn{padding:.5rem;background:var(--bg-input);border:1px solid var(--border);border-radius:5px;color:var(--text-secondary);cursor:pointer;font-size:.75rem;text-align:center}
+        .condition-btn:hover,.read-btn:hover{background:var(--bg-hover)}
+        .condition-btn.active,.read-btn.active{border-width:2px}
+        .condition-btn.active.mint,.read-btn.active.read{border-color:var(--positive);color:var(--positive)}
+        .condition-btn.active.good{border-color:var(--accent-gold);color:var(--accent-gold)}
+        .condition-btn.active.fair{border-color:var(--accent-copper);color:var(--accent-copper)}
+        .condition-btn.active.poor{border-color:var(--negative);color:var(--negative)}
+        .read-btn.active.to-read{border-color:var(--accent-gold);color:var(--accent-gold)}
+        .auto-value{font-size:.65rem;color:var(--accent-gold);margin-top:.25rem}
+        .photo-gallery-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:.5rem;margin-bottom:.75rem}
+        .photo-item{position:relative;aspect-ratio:1;border-radius:6px;overflow:hidden;background:var(--bg-input);cursor:pointer}
+        .photo-item img{width:100%;height:100%;object-fit:cover}
+        .photo-item.main{border:2px solid var(--accent-copper)}
+        .photo-item .photo-main-badge{position:absolute;bottom:2px;left:2px;background:var(--accent-copper);color:white;font-size:.5rem;padding:.1rem .25rem;border-radius:2px}
+        .photo-remove{position:absolute;top:2px;right:2px;width:18px;height:18px;background:var(--negative);border:none;border-radius:50%;color:white;font-size:10px;cursor:pointer;display:flex;align-items:center;justify-content:center;opacity:0;transition:opacity .2s}
+        .photo-item:hover .photo-remove{opacity:1}
+        .photo-actions{display:flex;gap:.5rem}
+        .photo-upload,.photo-camera{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:1rem .75rem;background:var(--bg-input);border:2px dashed var(--border);border-radius:8px;cursor:pointer;font-size:.75rem;color:var(--text-secondary);gap:.5rem;transition:all .2s}
+        .photo-upload:hover,.photo-camera:hover{border-color:var(--accent-copper);background:var(--bg-hover);color:var(--text-primary)}
+        .photo-upload input,.photo-camera input{display:none}
+        .photo-btn-icon{font-size:1.5rem}
+        .photo-btn-text{font-weight:500}
+        .modal-footer{padding:1rem 1.25rem;border-top:1px solid var(--border);display:flex;gap:.75rem;justify-content:space-between;position:sticky;bottom:0;background:var(--bg-card)}
+        .modal-footer-left,.modal-footer-right{display:flex;gap:.5rem}
+        .btn{padding:.6rem 1rem;border-radius:6px;font-size:.8rem;font-weight:500;cursor:pointer;transition:all .2s}
+        .btn-secondary{background:var(--bg-input);border:1px solid var(--border);color:var(--text-secondary)}
+        .btn-secondary:hover{background:var(--bg-hover);color:var(--text-primary)}
+        .btn-primary{background:var(--accent-copper);border:1px solid var(--accent-copper);color:white}
+        .btn-primary:hover{background:#d4886a}
+        .compare-card{background:var(--bg-input);border-radius:8px;padding:1rem;text-align:center}
+        .compare-card h4{font-size:.85rem;margin-bottom:.5rem}
+        .compare-stat{font-size:.75rem;color:var(--text-secondary);margin-bottom:.25rem}
+        .compare-stat strong{color:var(--text-primary)}
+        .icon{width:16px;height:16px;display:inline-block;vertical-align:middle}
+        .scanner-modal{position:fixed;inset:0;background:rgba(0,0,0,.95);z-index:1000;display:none;flex-direction:column}
+        .scanner-modal.active{display:flex}
+        .scanner-header{padding:1rem;display:flex;justify-content:space-between;align-items:center;background:var(--bg-card);border-bottom:1px solid var(--border)}
+        .scanner-title{font-family:'Playfair Display',serif;font-size:1.25rem}
+        .scanner-close{background:none;border:none;color:var(--text-primary);font-size:1.5rem;cursor:pointer;padding:.5rem}
+        .scanner-body{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:1rem;position:relative}
+        .scanner-viewport{width:100%;max-width:500px;aspect-ratio:4/3;background:#000;border-radius:12px;overflow:hidden;position:relative}
+        .scanner-viewport video{width:100%;height:100%;object-fit:cover}
+        .scanner-overlay{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;pointer-events:none}
+        .scanner-frame{width:80%;height:40%;border:3px solid var(--accent-copper);border-radius:8px;box-shadow:0 0 0 9999px rgba(0,0,0,.5)}
+        .scanner-line{position:absolute;width:76%;height:2px;background:var(--accent-copper);animation:scan 2s linear infinite}
+        @keyframes scan{0%,100%{top:32%}50%{top:62%}}
+        .scanner-result{margin-top:1.5rem;padding:1.25rem;background:var(--bg-card);border-radius:12px;width:100%;max-width:500px;text-align:center;min-height:120px}
+        .scanner-result-title{font-family:'Playfair Display',serif;font-size:1.1rem;margin-bottom:.5rem}
+        .scanner-result-isbn{font-size:.8rem;color:var(--text-secondary);margin-bottom:.75rem;font-family:monospace}
+        .scanner-result-status{padding:.5rem 1rem;border-radius:6px;font-size:.85rem;display:inline-block}
+        .scanner-result-status.owned{background:rgba(91,140,106,.2);color:var(--positive)}
+        .scanner-result-status.missing{background:rgba(196,165,90,.2);color:var(--accent-gold)}
+        .scanner-result-status.unknown{background:rgba(168,181,176,.2);color:var(--text-secondary)}
+        .scanner-result-actions{margin-top:1rem;display:flex;gap:.5rem;justify-content:center}
+        .scanner-manual{margin-top:1rem;display:flex;gap:.5rem;max-width:500px;width:100%}
+        .scanner-manual input{flex:1;padding:.6rem .75rem;background:var(--bg-input);border:1px solid var(--border);border-radius:6px;color:var(--text-primary);font-size:.85rem}
+        .scanner-manual input:focus{outline:none;border-color:var(--accent-copper)}
+        .scanner-manual button{padding:.6rem 1rem;background:var(--accent-copper);border:none;border-radius:6px;color:white;cursor:pointer;font-size:.85rem}
+        @media(max-width:768px){.header-content{flex-direction:column;gap:.75rem}.stats-bar-inner{flex-direction:column;gap:.75rem}.albums-grid{grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:.75rem}.modal-top-section{grid-template-columns:1fr}.form-row-3{grid-template-columns:1fr}.condition-options,.read-options{grid-template-columns:repeat(2,1fr)}.photo-gallery-grid{grid-template-columns:repeat(3,1fr)}.scanner-viewport{aspect-ratio:3/4}}
+    </style>
+</head>
+<body data-theme="dark">
+    <header class="header">
+        <div class="header-content">
+            <div style="display:flex;align-items:center;">
+                <div class="logo" onclick="window.location.href='index.html'"><div><div class="logo-text">BEAU</div><div class="logo-sub">Collections</div></div></div>
+                <div class="nav-links">
+                    <a href="asterix.html" class="nav-link active">Astérix</a>
+                    <a href="mortelle-adele.html" class="nav-link">Mortelle Adèle</a>
+                    <a href="tomtom-nana.html" class="nav-link">Tom-Tom et Nana</a>
+                </div>
+            </div>
+            <div class="header-actions">
+                <div class="theme-toggle" onclick="toggleTheme()"><div class="theme-icon active" id="icon-dark">☽</div><div class="theme-icon" id="icon-light">☀</div></div>
+                <button class="header-btn wishlist" onclick="openWishlistModal()">♥ Wishlist <span id="wishlist-count-btn">0</span></button>
+                <button class="header-btn" onclick="openScannerModal()">📷 Scan</button>
+                <button class="header-btn primary" onclick="openAddModal()">+ Album</button>
+                <div class="user-menu" id="user-menu">
+                    <div class="user-menu-btn" onclick="toggleUserDropdown()">
+                        <svg class="cockpit-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 4-6 8-6s8 2 8 6"/></svg>
+                        <span id="menu-name">Cockpit</span>
+                        <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg>
+                    </div>
+                    <div class="user-dropdown" id="user-dropdown">
+                        <div class="user-dropdown-header">
+                            <div class="user-dropdown-name" id="dropdown-name">User</div>
+                            <div class="user-dropdown-alias" id="dropdown-alias">@user</div>
+                        </div>
+                        <div class="user-dropdown-item" onclick="openCompareModal();toggleUserDropdown()"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M18 20V10M12 20V4M6 20v-6"/></svg>Stats</div>
+                        <div class="user-dropdown-item" onclick="exportPDF();toggleUserDropdown()"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><path d="M14 2v6h6M16 13H8M16 17H8M10 9H8"/></svg>Export PDF</div>
+                        <div class="user-dropdown-item" onclick="exportXLS();toggleUserDropdown()"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18M3 15h18M9 3v18M15 3v18"/></svg>Export Excel</div>
+                        <div class="user-dropdown-item" onclick="exportJSON();toggleUserDropdown()"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M19 21H5a2 2 0 01-2-2V5a2 2 0 012-2h11l5 5v11a2 2 0 01-2 2z"/><path d="M17 21v-8H7v8M7 3v5h8"/></svg>Sauvegarder</div>
+                        <div class="user-dropdown-item" onclick="importJSON();toggleUserDropdown()"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M17 8l-5-5-5 5M12 3v12"/></svg>Restaurer</div>
+                        <div class="user-dropdown-divider"></div>
+                        <a href="index.html" class="user-dropdown-item"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><path d="M9 22V12h6v10"/></svg>Hub</a>
+                        <div class="user-dropdown-item danger" onclick="signOutAndRedirect()"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4M16 17l5-5-5-5M21 12H9"/></svg>Sign out</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </header>
+    <div class="stats-bar">
+        <div class="stats-bar-inner">
+            <div class="stat-item"><div class="stat-value" id="owned-count">0</div><div class="stat-label">Possédés</div></div>
+            <div class="stat-item"><div class="stat-value" id="missing-count">0</div><div class="stat-label">Manquants</div></div>
+            <div class="stat-item"><div class="stat-value" id="read-count">0</div><div class="stat-label">Lus</div></div>
+            <div class="stat-item"><div class="stat-value" id="films-seen-count">0</div><div class="stat-label">Films vus</div></div>
+            <div class="stat-item price-item"><div class="stat-value" id="value-count">0€</div><div class="stat-label">Valeur est.</div></div>
+            <div class="progress-container"><div class="progress-bar"><div class="progress-fill" id="progress-fill" style="width:0%"></div></div><div class="progress-text" id="progress-text">0%</div></div>
+        </div>
+    </div>
+    <div class="filters">
+        <div class="filters-inner">
+            <div class="filter-group">
+                <label class="filter-check"><input type="checkbox" id="f-owned"> Possédés</label>
+                <label class="filter-check"><input type="checkbox" id="f-missing"> Manquants</label>
+                <label class="filter-check"><input type="checkbox" id="f-wishlist"> Wishlist</label>
+                <label class="filter-check"><input type="checkbox" id="f-read"> Lus</label>
+                <label class="filter-check"><input type="checkbox" id="f-to-read"> À lire</label>
+            </div>
+            <div class="filter-group">
+                <select class="filter-select" id="filter-authors"><option value="">Tous auteurs</option><option value="goscinny">Goscinny & Uderzo</option><option value="uderzo">Uderzo seul</option><option value="ferri">Ferri & Conrad</option></select>
+                <select class="filter-select" id="filter-type"><option value="">Tous types</option><option value="official">Série officielle</option><option value="special">Hors-série</option><option value="film">Adaptés au cinéma</option></select>
+            </div>
+            <input type="text" class="search-input" id="search" placeholder="Rechercher un titre...">
+            <button class="filter-reset" onclick="resetFilters()">Réinitialiser</button>
+        </div>
+        </div>
+    </div>
+    <main class="main">
+        <section class="useful-links" id="useful-links">
+            <div class="useful-links-header">
+                <h2 class="useful-links-title">Liens utiles</h2>
+                <button class="add-link-btn" id="edit-links-btn" onclick="toggleEditLinks()">✎ Modifier</button>
+                <button class="add-link-btn" id="add-link-btn" style="display:none;" onclick="openAddLinkModal()">+ Ajouter</button>
+            </div>
+            <div class="useful-links-grid" id="links-grid"></div>
+        </section>
+        <section class="news-section" id="news-section">
+            <h2 class="news-title">Actualités Astérix</h2>
+            <div class="news-grid" id="news-grid"></div>
+        </section>
+        <div id="official-section"><h2 class="section-title">Série Officielle <span class="section-badge" id="official-badge">41</span></h2><div class="albums-grid" id="official-grid"></div></div>
+        <div id="special-section"><h2 class="section-title">Albums Illustrés & Hors-Série <span class="section-badge" id="special-badge">0</span></h2><div class="albums-grid" id="special-grid"></div></div>
+        <div id="custom-section" style="display:none;"><h2 class="section-title">Mes ajouts <span class="section-badge" id="custom-badge">0</span></h2><div class="albums-grid" id="custom-grid"></div></div>
+    </main>
+
+    <!-- Scanner Modal -->
+    <div class="scanner-modal" id="scanner-modal">
+        <div class="scanner-header">
+            <div class="scanner-title">📷 Scanner ISBN</div>
+            <button class="scanner-close" onclick="closeScannerModal()">×</button>
+        </div>
+        <div class="scanner-body">
+            <div class="scanner-viewport" id="scanner-viewport">
+                <div class="scanner-overlay">
+                    <div class="scanner-frame"></div>
+                    <div class="scanner-line"></div>
+                </div>
+            </div>
+            <div class="scanner-manual">
+                <input type="text" id="manual-isbn" placeholder="Ou saisir l'ISBN manuellement..." maxlength="13">
+                <button onclick="lookupManualISBN()">Chercher</button>
+            </div>
+            <div class="scanner-result" id="scanner-result">
+                <div style="color:var(--text-secondary);font-size:.85rem;">Pointez la caméra vers le code-barres ISBN</div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal-overlay" id="modal">
+        <div class="modal">
+            <div class="modal-header"><div class="modal-title" id="modal-title">Album</div><button class="modal-close" onclick="closeModal()">×</button></div>
+            <div class="modal-body">
+                <div class="modal-top-section">
+                    <div><img class="modal-cover" id="modal-cover" src="" alt=""><div id="modal-film-badge" style="display:none;margin-top:.5rem;"><span style="background:var(--film-badge);color:white;padding:.25rem .5rem;border-radius:4px;font-size:.7rem;display:flex;align-items:center;gap:.25rem;"><svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M18 4l2 4h-3l-2-4h-2l2 4h-3l-2-4H8l2 4H7L5 4H4c-1.1 0-1.99.9-1.99 2L2 18c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V4h-4z"/></svg> Cinéma</span></div></div>
+                    <div>
+                        <h2 class="modal-album-title" id="modal-album-title"></h2>
+                        <div class="modal-album-meta"><span id="modal-year"></span><span id="modal-authors"></span><span id="modal-pages"></span></div>
+                        <div id="modal-ref-eo" style="font-size:.7rem;color:var(--text-secondary);margin:.5rem 0;padding:.5rem;background:var(--bg-input);border-radius:4px;"></div>
+                        <div class="synopsis-box" id="modal-synopsis"></div>
+                        <div class="wiki-album-link" id="wiki-album-link" style="margin-top:.5rem;"></div>
+                        <div class="film-info" id="modal-film-info" style="display:none;">
+                            <div class="film-info-title"><svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M18 4l2 4h-3l-2-4h-2l2 4h-3l-2-4H8l2 4H7L5 4H4c-1.1 0-1.99.9-1.99 2L2 18c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V4h-4z"/></svg> Adaptations cinéma</div>
+                            <div id="modal-film-details"></div>
+                            <div id="modal-film-links"></div>
+                        </div>
+                    </div>
+                </div>
+                <div class="form-section"><div class="form-section-title">Possession</div><div class="form-group"><div class="form-toggle"><button class="toggle-btn" id="btn-owned" onclick="setOwned(true)">✓ Je l'ai</button><button class="toggle-btn" id="btn-not-owned" onclick="setOwned(false)">○ Manquant</button><button class="toggle-btn" id="btn-wishlist" onclick="toggleWishlist()">♥ Wishlist</button></div></div></div>
+                <div class="form-section">
+                    <div class="form-section-title">Lecture</div>
+                    <div class="form-group"><div class="read-options"><button class="read-btn" data-read="read" onclick="setReadStatus('read')">✓ Lu</button><button class="read-btn" data-read="to-read" onclick="setReadStatus('to-read')">À lire</button></div></div>
+                </div>
+                <div id="owned-fields" style="display:none;">
+                    <div class="form-section">
+                        <div class="form-section-title">Mon édition</div>
+                        <div class="form-row">
+                            <div class="form-group"><label class="form-label">Type d'édition</label><select class="form-input form-select" id="edition-type" onchange="onEditionTypeChange()"><option value="">-- Sélectionner --</option><option value="eo">Édition originale</option><option value="reprint">Réédition standard</option><option value="collector">Édition collector</option><option value="luxe">Édition de luxe</option><option value="pocket">Format poche</option><option value="pirate">Édition pirate</option></select></div>
+                            <div class="form-group"><label class="form-label">Année de mon édition</label><input type="text" class="form-input" id="edition-year" placeholder="Ex: 1985"></div>
+                        </div>
+                        <div class="form-row">
+                            <div class="form-group"><label class="form-label">ISBN de mon exemplaire</label><input type="text" class="form-input" id="my-isbn" placeholder="978-2-..."></div>
+                            <div class="form-group"><label class="form-label">Tirage / Dépôt légal</label><input type="text" class="form-input" id="my-tirage" placeholder="Ex: 3e trim. 1985"></div>
+                        </div>
+                    </div>
+                    <div class="form-section">
+                        <div class="form-section-title">Acquisition</div>
+                        <div class="form-row form-row-3">
+                            <div class="form-group"><label class="form-label">Date</label><input type="date" class="form-input" id="acquisition-date"></div>
+                            <div class="form-group"><label class="form-label">Canal</label><select class="form-input form-select" id="acquisition-channel"><option value="">--</option><option value="gift">Cadeau</option><option value="bookstore">Librairie</option><option value="online">En ligne</option><option value="flea">Brocante</option><option value="auction">Enchères</option><option value="inheritance">Héritage</option></select></div>
+                            <div class="form-group"><label class="form-label">Prix achat (€)</label><input type="number" class="form-input" id="purchase-price" step="0.01"></div>
+                        </div>
+                    </div>
+                    <div class="form-section">
+                        <div class="form-section-title">État & Valeur</div>
+                        <div class="form-row">
+                            <div class="form-group"><label class="form-label">État</label><div class="condition-options"><button class="condition-btn" data-condition="mint" onclick="setCondition('mint')">Neuf</button><button class="condition-btn" data-condition="good" onclick="setCondition('good')">Bon</button><button class="condition-btn" data-condition="fair" onclick="setCondition('fair')">Moyen</button><button class="condition-btn" data-condition="poor" onclick="setCondition('poor')">Usé</button></div></div>
+                            <div class="form-group"><label class="form-label">Valeur estimée (€)</label><input type="number" class="form-input" id="estimated-value" step="0.01" readonly><div class="auto-value" id="value-auto"></div></div>
+                        </div>
+                    </div>
+                    <div class="form-section">
+                        <div class="form-section-title">Mes photos</div>
+                        <p style="font-size:.7rem;color:var(--text-secondary);margin-bottom:.75rem;">Ajoutez des photos de votre exemplaire • Cliquez sur une photo pour la définir comme principale</p>
+                        <div class="photo-gallery-grid" id="photo-grid"></div>
+                        <div class="photo-actions">
+                            <label class="photo-upload">
+                                <input type="file" accept="image/*" multiple onchange="addPhotos(event)">
+                                <span class="photo-btn-icon">📁</span>
+                                <span class="photo-btn-text">Choisir depuis la galerie</span>
+                            </label>
+                            <label class="photo-camera">
+                                <input type="file" accept="image/*" capture="environment" onchange="addPhotos(event)">
+                                <span class="photo-btn-icon">📷</span>
+                                <span class="photo-btn-text">Prendre une photo</span>
+                            </label>
+                        </div>
+                    </div>
+                    <div class="form-section">
+                        <div class="form-section-title">Autres versions possédées</div>
+                        <p style="font-size:.7rem;color:var(--text-secondary);margin-bottom:.5rem;">Éditions en langue étrangère, collector, etc.</p>
+                        <div id="versions-list"></div>
+                        <div class="form-row" style="margin-top:.5rem;">
+                            <select class="form-input" id="version-lang" style="flex:1">
+                                <option value="">Choisir une langue...</option>
+                                <option value="en">Anglais</option>
+                                <option value="de">Allemand</option>
+                                <option value="es">Espagnol</option>
+                                <option value="it">Italien</option>
+                                <option value="pt">Portugais</option>
+                                <option value="nl">Néerlandais</option>
+                                <option value="latin">Latin</option>
+                                <option value="breton">Breton</option>
+                                <option value="picard">Picard</option>
+                                <option value="other">Autre...</option>
+                            </select>
+                            <input type="text" class="form-input" id="version-note" placeholder="Note (optionnel)" style="flex:2">
+                            <button class="btn btn-secondary" onclick="addVersion()" style="flex:0">+</button>
+                        </div>
+                    </div>
+                    <div class="form-section">
+                        <div class="form-section-title">Notes</div>
+                        <div class="form-group"><textarea class="form-input form-textarea" id="notes" placeholder="Dédicace, souvenir, état particulier..."></textarea></div>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer"><div class="modal-footer-left"><button class="btn btn-secondary" onclick="closeModal()">Fermer</button></div><div class="modal-footer-right"><button class="btn btn-primary" onclick="saveAlbum()">Enregistrer</button></div></div>
+        </div>
+    </div>
+
+    <div class="modal-overlay" id="add-modal">
+        <div class="modal">
+            <div class="modal-header"><div class="modal-title">Ajouter un album</div><button class="modal-close" onclick="closeAddModal()">×</button></div>
+            <div class="modal-body">
+                <div class="form-group"><label class="form-label">Titre *</label><input type="text" class="form-input" id="new-title"></div>
+                <div class="form-row"><div class="form-group"><label class="form-label">Année</label><input type="number" class="form-input" id="new-year"></div><div class="form-group"><label class="form-label">Pages</label><input type="number" class="form-input" id="new-pages"></div></div>
+                <div class="form-row"><div class="form-group"><label class="form-label">Type</label><select class="form-input" id="new-type"><option value="special">Hors-série</option><option value="illustrated">Album illustré</option><option value="film-book">Livre du film</option><option value="other">Autre</option></select></div><div class="form-group"><label class="form-label">Auteurs</label><input type="text" class="form-input" id="new-authors"></div></div>
+                <div class="form-group"><label class="form-label">URL couverture</label><input type="text" class="form-input" id="new-cover"></div>
+                <div class="form-group"><label class="form-label">Résumé</label><textarea class="form-input form-textarea" id="new-synopsis"></textarea></div>
+            </div>
+            <div class="modal-footer"><div class="modal-footer-left"><button class="btn btn-secondary" onclick="closeAddModal()">Annuler</button></div><div class="modal-footer-right"><button class="btn btn-primary" onclick="addNewAlbum()">Ajouter</button></div></div>
+        </div>
+    </div>
+
+    <div class="modal-overlay" id="compare-modal">
+        <div class="modal" style="max-width:800px;">
+            <div class="modal-header"><div class="modal-title">Statistiques de la collection</div><button class="modal-close" onclick="closeCompareModal()">×</button></div>
+            <div class="modal-body"><div id="compare-content"></div></div>
+            <div class="modal-footer"><div class="modal-footer-right"><button class="btn btn-secondary" onclick="closeCompareModal()">Fermer</button></div></div>
+        </div>
+    </div>
+
+    <div class="modal-overlay" id="wishlist-modal">
+        <div class="modal" style="max-width:800px;">
+            <div class="modal-header"><div class="modal-title">Ma Liste de Souhaits</div><button class="modal-close" onclick="closeWishlistModal()">×</button></div>
+            <div class="modal-body"><div id="wishlist-content"></div></div>
+        </div>
+    </div>
+
+    <div class="modal-overlay" id="add-link-modal">
+        <div class="modal" style="max-width:400px;">
+            <div class="modal-header"><div class="modal-title">Ajouter un lien</div><button class="modal-close" onclick="closeAddLinkModal()">×</button></div>
+            <div class="modal-body">
+                <div class="form-group"><label class="form-label">Nom du site</label><input type="text" class="form-input" id="link-name" placeholder="Ex: BDGest"></div>
+                <div class="form-group"><label class="form-label">URL</label><input type="url" class="form-input" id="link-url" placeholder="https://..."></div>
+            </div>
+            <div class="modal-footer"><div class="modal-footer-left"><button class="btn btn-secondary" onclick="closeAddLinkModal()">Annuler</button></div><div class="modal-footer-right"><button class="btn btn-primary" onclick="addCustomLink()">Ajouter</button></div></div>
+        </div>
+    </div>
+
+    <script>
+const officialAlbums=[
+{id:1,title:"Astérix le Gaulois",year:1961,authors:"goscinny",pages:48,tirage:"6 000 (1ère éd.)",isbn:"978-2-01-210134-5",baseValue:15,cover:"https://www.bedetheque.com/cache/thb_couv/Couv_22940.jpg",type:"official",synopsis:"L'album fondateur qui présente le village des irréductibles Gaulois, leur druide Panoramix et sa mystérieuse potion magique. Les Romains du camp de Petibonum vont vite comprendre que ces Gaulois ne sont pas comme les autres...",wiki:"https://fr.wikipedia.org/wiki/Ast%C3%A9rix_le_Gaulois",film:[{title:"Astérix le Gaulois",year:1967,type:"Animation",allocine:"https://www.allocine.fr/film/fichefilm_gen_cfilm=2246.html"}]},
+{id:2,title:"La Serpe d'or",year:1962,authors:"goscinny",pages:48,tirage:"20 000",isbn:"978-2-01-210135-2",baseValue:12,cover:"https://www.bedetheque.com/cache/thb_couv/asterix02eo_22942.jpg",type:"official",synopsis:"Première grande aventure du duo ! Direction Lutèce pour trouver une serpe d'or destinée au druide. L'occasion de découvrir la capitale gauloise et ses bas-fonds, avec l'apparition d'un personnage récurrent.",wiki:"https://fr.wikipedia.org/wiki/La_Serpe_d%27or"},
+{id:3,title:"Astérix et les Goths",year:1963,authors:"goscinny",pages:48,isbn:"978-2-01-210136-9",baseValue:12,cover:"https://www.bedetheque.com/cache/thb_couv/Couv_22944.jpg",type:"official",synopsis:"Panoramix est enlevé lors du concours annuel des druides. Nos héros se lancent à sa poursuite en Germanie, où ils vont semer une joyeuse pagaille qui marquera l'histoire.",wiki:"https://fr.wikipedia.org/wiki/Ast%C3%A9rix_et_les_Goths"},
+{id:4,title:"Astérix Gladiateur",year:1964,authors:"goscinny",pages:48,isbn:"978-2-01-210137-6",baseValue:12,cover:"https://www.bedetheque.com/cache/thb_couv/asterixco04.jpg",type:"official",synopsis:"Quand Assurancetourix est offert en cadeau à César, Astérix et Obélix n'ont qu'une solution : s'engager comme gladiateurs pour le libérer. Une plongée dans la Rome antique et ses arènes.",wiki:"https://fr.wikipedia.org/wiki/Ast%C3%A9rix_gladiateur"},
+{id:5,title:"Le Tour de Gaule d'Astérix",year:1965,authors:"goscinny",pages:48,isbn:"978-2-01-210138-3",baseValue:12,cover:"https://www.bedetheque.com/cache/thb_couv/asterixco05.jpg",type:"official",synopsis:"Un pari fou : ramener des spécialités de toute la Gaule malgré l'encerclement romain. De Rotomagus à Massilia, un voyage gastronomique et humoristique à travers les provinces gauloises.",wiki:"https://fr.wikipedia.org/wiki/Le_Tour_de_Gaule_d%27Ast%C3%A9rix"},
+{id:6,title:"Astérix et Cléopâtre",year:1965,authors:"goscinny",pages:48,tirage:"300 000",isbn:"978-2-01-210139-0",baseValue:12,cover:"https://www.bedetheque.com/cache/thb_couv/Couv_22950.jpg",type:"official",synopsis:"Le chef-d'œuvre égyptien de la série ! Cléopâtre parie avec César qu'elle peut construire un palais en trois mois. Numérobis l'architecte appelle à l'aide les Gaulois et leur potion. Pyramides, hiéroglyphes et pudding à l'arsenic au programme.",wiki:"https://fr.wikipedia.org/wiki/Ast%C3%A9rix_et_Cl%C3%A9op%C3%A2tre",film:[{title:"Astérix et Cléopâtre",year:1968,type:"Animation",allocine:"https://www.allocine.fr/film/fichefilm_gen_cfilm=2171.html"},{title:"Mission Cléopâtre",year:2002,type:"Live (Chabat)",allocine:"https://www.allocine.fr/film/fichefilm_gen_cfilm=28537.html"}]},
+{id:7,title:"Le Combat des Chefs",year:1966,authors:"goscinny",pages:48,isbn:"978-2-01-210140-6",baseValue:12,cover:"https://www.bedetheque.com/cache/thb_couv/asterixco07.jpg",type:"official",synopsis:"Rome tente une nouvelle stratégie : utiliser un chef gaulois romanisé pour défier Abraracourcix. La tradition du combat des chefs peut-elle mettre fin à la résistance du village ?",wiki:"https://fr.wikipedia.org/wiki/Le_Combat_des_chefs",film:[{title:"Le Combat des Chefs",year:2025,type:"Série Netflix (Chabat)",allocine:"https://www.allocine.fr/series/ficheserie_gen_cserie=31094.html"}]},
+{id:8,title:"Astérix chez les Bretons",year:1966,authors:"goscinny",pages:48,isbn:"978-2-01-210141-3",baseValue:12,cover:"https://www.bedetheque.com/cache/thb_couv/asterixco08.jpg",type:"official",synopsis:"Les Bretons résistent aussi à l'envahisseur, mais ils ont besoin de potion magique ! Traversée de la Manche, humour britannique, eau chaude et brouillard : un classique de la série.",wiki:"https://fr.wikipedia.org/wiki/Ast%C3%A9rix_chez_les_Bretons",film:[{title:"Astérix chez les Bretons",year:1986,type:"Animation",allocine:"https://www.allocine.fr/film/fichefilm_gen_cfilm=2173.html"},{title:"Au service de Sa Majesté",year:2012,type:"Live",allocine:"https://www.allocine.fr/film/fichefilm_gen_cfilm=145513.html"}]},
+{id:9,title:"Astérix et les Normands",year:1966,authors:"goscinny",pages:48,isbn:"978-2-01-210142-0",baseValue:12,cover:"https://www.bedetheque.com/cache/thb_couv/Couv_22954.jpg",type:"official",synopsis:"Les Normands débarquent en Gaule pour apprendre ce qu'est la peur - car selon leurs croyances, elle fait voler. Le neveu d'Abraracourcix va servir de cobaye dans cette aventure hilarante.",wiki:"https://fr.wikipedia.org/wiki/Ast%C3%A9rix_et_les_Normands",film:[{title:"Astérix et les Vikings",year:2006,type:"Animation",allocine:"https://www.allocine.fr/film/fichefilm_gen_cfilm=54174.html"}]},
+{id:10,title:"Astérix Légionnaire",year:1967,authors:"goscinny",pages:48,isbn:"978-2-01-210143-7",baseValue:12,cover:"https://www.bedetheque.com/cache/thb_couv/asterix10.jpg",type:"official",synopsis:"Pour retrouver le fiancé de la belle Falbala, Astérix et Obélix s'engagent dans la légion romaine. Entraînement, défilés et campagne en Afrique : l'armée romaine n'est pas prête.",wiki:"https://fr.wikipedia.org/wiki/Ast%C3%A9rix_l%C3%A9gionnaire",film:[{title:"La Surprise de César",year:1985,type:"Animation",allocine:"https://www.allocine.fr/film/fichefilm_gen_cfilm=2172.html"}]},
+{id:11,title:"Le Bouclier Arverne",year:1968,authors:"goscinny",pages:48,isbn:"978-2-01-210144-4",baseValue:12,cover:"https://www.bedetheque.com/cache/thb_couv/Couv_22956.jpg",type:"official",synopsis:"Une cure thermale pour Abraracourcix en Auvergne devient une quête historique : retrouver le bouclier de Vercingétorix avant les Romains. Charbon, saucisses et fierté arverne au menu.",wiki:"https://fr.wikipedia.org/wiki/Le_Bouclier_arverne"},
+{id:12,title:"Astérix aux Jeux Olympiques",year:1968,authors:"goscinny",pages:48,isbn:"978-2-01-210145-1",baseValue:12,cover:"https://www.bedetheque.com/cache/thb_couv/asterixco12.jpg",type:"official",synopsis:"Direction la Grèce pour les Jeux Olympiques ! Mais comment concourir sans la potion magique, interdite comme produit dopant ? Une réflexion sportive et comique sur l'esprit olympique.",wiki:"https://fr.wikipedia.org/wiki/Ast%C3%A9rix_aux_Jeux_olympiques",film:[{title:"Astérix aux J.O.",year:2008,type:"Live",allocine:"https://www.allocine.fr/film/fichefilm_gen_cfilm=56926.html"}]},
+{id:13,title:"Astérix et le Chaudron",year:1969,authors:"goscinny",pages:48,isbn:"978-2-01-210146-8",baseValue:12,cover:"https://www.bedetheque.com/cache/thb_couv/asterix13.jpg",type:"official",synopsis:"Un chaudron de sesterces disparaît.",wiki:"https://fr.wikipedia.org/wiki/Ast%C3%A9rix_et_le_Chaudron"},
+{id:14,title:"Astérix en Hispanie",year:1969,authors:"goscinny",pages:48,isbn:"978-2-01-210147-5",baseValue:12,cover:"https://www.bedetheque.com/cache/thb_couv/asterixco14.jpg",type:"official",synopsis:"Escorte de Pépé jusqu'en Hispanie.",wiki:"https://fr.wikipedia.org/wiki/Ast%C3%A9rix_en_Hispanie"},
+{id:15,title:"La Zizanie",year:1970,authors:"goscinny",pages:48,isbn:"978-2-01-210148-2",baseValue:12,cover:"https://www.bedetheque.com/cache/thb_couv/asterix15couv.jpg",type:"official",synopsis:"Tullius Détritus sème la discorde.",wiki:"https://fr.wikipedia.org/wiki/La_Zizanie_(bande_dessin%C3%A9e)",film:[{title:"Le Coup du menhir",year:1989,type:"Animation",allocine:"https://www.allocine.fr/film/fichefilm_gen_cfilm=4605.html"}]},
+{id:16,title:"Astérix chez les Helvètes",year:1970,authors:"goscinny",pages:48,isbn:"978-2-01-210149-9",baseValue:12,cover:"https://www.bedetheque.com/cache/thb_couv/asterixco16.jpg",type:"official",synopsis:"Chercher une fleur rare en Suisse.",wiki:"https://fr.wikipedia.org/wiki/Ast%C3%A9rix_chez_les_Helv%C3%A8tes"},
+{id:17,title:"Le Domaine des Dieux",year:1971,authors:"goscinny",pages:48,isbn:"978-2-01-210150-5",baseValue:12,cover:"https://www.bedetheque.com/cache/thb_couv/asterix17.jpg",type:"official",synopsis:"César construit autour du village.",wiki:"https://fr.wikipedia.org/wiki/Le_Domaine_des_dieux",film:[{title:"Le Domaine des Dieux",year:2014,type:"Animation 3D (Astier)",allocine:"https://www.allocine.fr/film/fichefilm_gen_cfilm=206028.html"}]},
+{id:18,title:"Les Lauriers de César",year:1972,authors:"goscinny",pages:48,isbn:"978-2-01-210151-2",baseValue:12,cover:"https://www.bedetheque.com/cache/thb_couv/Couv_88.jpg",type:"official",synopsis:"Chercher les lauriers de César à Rome.",wiki:"https://fr.wikipedia.org/wiki/Les_Lauriers_de_C%C3%A9sar"},
+{id:19,title:"Le Devin",year:1972,authors:"goscinny",pages:48,isbn:"978-2-01-210152-9",baseValue:12,cover:"https://www.bedetheque.com/cache/thb_couv/Couv_89.jpg",type:"official",synopsis:"Un faux devin s'installe au village.",wiki:"https://fr.wikipedia.org/wiki/Le_Devin_(bande_dessin%C3%A9e)",film:[{title:"Astérix contre César",year:1999,type:"Live (Zidi)",allocine:"https://www.allocine.fr/film/fichefilm_gen_cfilm=21856.html"}]},
+{id:20,title:"Astérix en Corse",year:1973,authors:"goscinny",pages:48,isbn:"978-2-01-210153-6",baseValue:12,cover:"https://www.bedetheque.com/cache/thb_couv/Couv_90.jpg",type:"official",synopsis:"Libérer la Corse avec humour corse !",wiki:"https://fr.wikipedia.org/wiki/Ast%C3%A9rix_en_Corse"},
+{id:21,title:"Le Cadeau de César",year:1974,authors:"goscinny",pages:48,isbn:"978-2-01-210154-3",baseValue:12,cover:"https://www.bedetheque.com/cache/thb_couv/Couv_92.jpg",type:"official",synopsis:"César offre le village à un légionnaire.",wiki:"https://fr.wikipedia.org/wiki/Le_Cadeau_de_C%C3%A9sar"},
+{id:22,title:"La Grande Traversée",year:1975,authors:"goscinny",pages:48,isbn:"978-2-01-210155-0",baseValue:12,cover:"https://www.bedetheque.com/cache/thb_couv/Couv_94.jpg",type:"official",synopsis:"Découverte de l'Amérique !",wiki:"https://fr.wikipedia.org/wiki/La_Grande_Travers%C3%A9e",film:[{title:"Astérix et les Indiens",year:1994,type:"Animation",allocine:"https://www.allocine.fr/film/fichefilm_gen_cfilm=10893.html"}]},
+{id:23,title:"Obélix et Compagnie",year:1976,authors:"goscinny",pages:48,isbn:"978-2-01-210156-7",baseValue:12,cover:"https://www.bedetheque.com/cache/thb_couv/Asterix23.jpg",type:"official",synopsis:"Obélix entrepreneur - satire économique.",wiki:"https://fr.wikipedia.org/wiki/Ob%C3%A9lix_et_Compagnie"},
+{id:24,title:"Astérix chez les Belges",year:1979,authors:"goscinny",pages:48,isbn:"978-2-01-210157-4",baseValue:15,cover:"https://www.bedetheque.com/cache/thb_couv/Couv_99.jpg",type:"official",synopsis:"Dernier album de Goscinny.",wiki:"https://fr.wikipedia.org/wiki/Ast%C3%A9rix_chez_les_Belges"},
+{id:25,title:"Le Grand Fossé",year:1980,authors:"uderzo",pages:48,isbn:"978-2-86497-000-7",baseValue:10,cover:"https://www.bedetheque.com/cache/thb_couv/Couv_100.jpg",type:"official",synopsis:"Premier album d'Uderzo seul.",wiki:"https://fr.wikipedia.org/wiki/Le_Grand_Foss%C3%A9"},
+{id:26,title:"L'Odyssée d'Astérix",year:1981,authors:"uderzo",pages:48,isbn:"978-2-86497-004-5",baseValue:10,cover:"https://www.bedetheque.com/cache/thb_couv/Couv_101.jpg",type:"official",synopsis:"Vers le Moyen-Orient.",wiki:"https://fr.wikipedia.org/wiki/L%27Odyss%C3%A9e_d%27Ast%C3%A9rix"},
+{id:27,title:"Le Fils d'Astérix",year:1983,authors:"uderzo",pages:48,isbn:"978-2-86497-006-9",baseValue:10,cover:"https://www.bedetheque.com/cache/thb_couv/Couv_102.jpg",type:"official",synopsis:"Un bébé mystérieux.",wiki:"https://fr.wikipedia.org/wiki/Le_Fils_d%27Ast%C3%A9rix"},
+{id:28,title:"Astérix chez Rahàzade",year:1987,authors:"uderzo",pages:48,isbn:"978-2-86497-020-5",baseValue:10,cover:"https://www.bedetheque.com/cache/thb_couv/Couv_104.jpg",type:"official",synopsis:"Sauver une princesse en Inde.",wiki:"https://fr.wikipedia.org/wiki/Ast%C3%A9rix_chez_Rah%C3%A0zade"},
+{id:29,title:"La Rose et le Glaive",year:1991,authors:"uderzo",pages:48,isbn:"978-2-86497-049-6",baseValue:10,cover:"https://www.bedetheque.com/cache/thb_couv/Couv_105.jpg",type:"official",synopsis:"Maestria prône l'égalité des sexes.",wiki:"https://fr.wikipedia.org/wiki/La_Rose_et_le_Glaive"},
+{id:30,title:"La Galère d'Obélix",year:1996,authors:"uderzo",pages:48,isbn:"978-2-86497-078-6",baseValue:10,cover:"https://www.bedetheque.com/cache/thb_couv/Couv_984.jpg",type:"official",synopsis:"Obélix boit de la potion.",wiki:"https://fr.wikipedia.org/wiki/La_Gal%C3%A8re_d%27Ob%C3%A9lix"},
+{id:31,title:"Astérix et Latraviata",year:2001,authors:"uderzo",pages:48,isbn:"978-2-86497-097-7",baseValue:10,cover:"https://www.bedetheque.com/cache/thb_couv/asterix31.jpg",type:"official",synopsis:"Des imposteurs et les parents.",wiki:"https://fr.wikipedia.org/wiki/Ast%C3%A9rix_et_Latraviata"},
+{id:32,title:"Astérix et la Rentrée Gauloise",year:2003,authors:"goscinny",pages:56,isbn:"978-2-86497-099-1",baseValue:10,cover:"https://www.bedetheque.com/cache/thb_couv/asterixhorsserie01hs.jpg",type:"official",synopsis:"14 histoires courtes.",wiki:"https://fr.wikipedia.org/wiki/Ast%C3%A9rix_et_la_Rentr%C3%A9e_gauloise"},
+{id:33,title:"Le Ciel lui tombe sur la tête",year:2005,authors:"uderzo",pages:48,isbn:"978-2-86497-176-9",baseValue:10,cover:"https://www.bedetheque.com/cache/thb_couv/Couv_51223.jpg",type:"official",synopsis:"Des extraterrestres !",wiki:"https://fr.wikipedia.org/wiki/Le_Ciel_lui_tombe_sur_la_t%C3%AAte"},
+{id:34,title:"L'Anniversaire d'Astérix et Obélix",year:2009,authors:"uderzo",pages:56,isbn:"978-2-86497-200-1",baseValue:12,cover:"https://www.bedetheque.com/cache/thb_couv/Couv_97669.jpg",type:"official",synopsis:"50 ans d'Astérix.",wiki:"https://fr.wikipedia.org/wiki/L%27Anniversaire_d%27Ast%C3%A9rix_et_Ob%C3%A9lix_%E2%80%93_Le_Livre_d%27or"},
+{id:35,title:"Astérix chez les Pictes",year:2013,authors:"ferri",pages:48,tirage:"5 000 000",isbn:"978-2-86497-257-5",baseValue:10,cover:"https://www.bedetheque.com/cache/thb_couv/Couv_198583.jpg",type:"official",synopsis:"Premier Ferri & Conrad.",wiki:"https://fr.wikipedia.org/wiki/Ast%C3%A9rix_chez_les_Pictes"},
+{id:36,title:"Le Papyrus de César",year:2015,authors:"ferri",pages:48,tirage:"4 000 000",isbn:"978-2-86497-276-6",baseValue:10,cover:"https://www.bedetheque.com/cache/thb_couv/Couv_257911.jpg",type:"official",synopsis:"César censure ses mémoires.",wiki:"https://fr.wikipedia.org/wiki/Le_Papyrus_de_C%C3%A9sar"},
+{id:37,title:"Astérix et la Transitalique",year:2017,authors:"ferri",pages:48,tirage:"5 000 000",isbn:"978-2-86497-326-8",baseValue:10,cover:"https://www.bedetheque.com/cache/thb_couv/Couv_313357.jpg",type:"official",synopsis:"Course de chars en Italie.",wiki:"https://fr.wikipedia.org/wiki/Ast%C3%A9rix_et_la_Transitalique"},
+{id:38,title:"La Fille de Vercingétorix",year:2019,authors:"ferri",pages:48,tirage:"5 000 000",isbn:"978-2-86497-342-3",baseValue:10,cover:"https://www.bedetheque.com/cache/thb_couv/Couv_375114.jpg",type:"official",synopsis:"Adrénaline au village.",wiki:"https://fr.wikipedia.org/wiki/La_Fille_de_Vercing%C3%A9torix"},
+{id:39,title:"Astérix et le Griffon",year:2021,authors:"ferri",pages:48,tirage:"5 000 000",isbn:"978-2-01-451265-5",baseValue:10,cover:"https://www.bedetheque.com/cache/thb_couv/Couv_432358.jpg",type:"official",synopsis:"Chez les Sarmates.",wiki:"https://fr.wikipedia.org/wiki/Ast%C3%A9rix_et_le_Griffon"},
+{id:40,title:"L'Iris Blanc",year:2023,authors:"ferri",pages:48,tirage:"5 000 000",isbn:"978-2-01-462753-3",baseValue:14,cover:"https://www.bedetheque.com/cache/thb_couv/Couv_483736.jpg",type:"official",synopsis:"Bien-être romain.",wiki:"https://fr.wikipedia.org/wiki/L%27Iris_blanc"},
+{id:41,title:"Astérix en Lusitanie",year:2025,authors:"ferri",pages:48,tirage:"5 000 000",isbn:"978-2-01-710237-5",baseValue:14,cover:"https://www.bedetheque.com/cache/thb_couv/Couv_527581.jpg",type:"official",synopsis:"Direction le Portugal !",wiki:"https://fr.wikipedia.org/wiki/Ast%C3%A9rix_en_Lusitanie"}
+];
+
+const specialAlbums=[
+{id:1001,title:"Les 12 Travaux d'Astérix",year:1976,authors:"Goscinny & Uderzo",pages:80,isbn:"978-2-01-210101-7",baseValue:25,cover:"https://m.media-amazon.com/images/I/91FyF0MTDTL._SL1500_.jpg",type:"illustrated",synopsis:"César propose 12 travaux impossibles. Scénario original du film culte.",wiki:"https://fr.wikipedia.org/wiki/Les_Douze_Travaux_d%27Ast%C3%A9rix",film:[{title:"Les 12 Travaux d'Astérix",year:1976,type:"Animation (culte)",allocine:"https://www.allocine.fr/film/fichefilm_gen_cfilm=31137.html"}]},
+{id:1002,title:"Comment Obélix est tombé dans la marmite",year:1989,authors:"Goscinny & Uderzo",pages:32,isbn:"978-2-86497-039-7",baseValue:15,cover:"https://m.media-amazon.com/images/I/81Y+W7flkRL._SL1500_.jpg",type:"illustrated",synopsis:"Le secret enfin révélé !",wiki:"https://fr.wikipedia.org/wiki/Comment_Ob%C3%A9lix_est_tomb%C3%A9_dans_la_marmite_du_druide_quand_il_%C3%A9tait_petit"},
+{id:1003,title:"Le Menhir d'Or",year:2020,authors:"Goscinny & Uderzo",pages:48,isbn:"978-2-01-451109-2",baseValue:15,cover:"https://m.media-amazon.com/images/I/A1evrhiIgsL._SL1500_.jpg",type:"illustrated",synopsis:"Assurancetourix au concours du Menhir d'Or.",wiki:"https://fr.wikipedia.org/wiki/Le_Menhir_d%27or"},
+{id:1004,title:"Astérix et ses Amis",year:2007,authors:"Collectif",pages:64,isbn:"978-2-86497-190-5",baseValue:20,cover:"",type:"special",synopsis:"Hommage pour les 80 ans d'Uderzo.",wiki:"https://fr.wikipedia.org/wiki/Ast%C3%A9rix_et_ses_amis"},
+{id:1005,title:"Générations Astérix",year:2019,authors:"Collectif",pages:128,isbn:"978-2-86497-395-4",baseValue:25,cover:"",type:"special",synopsis:"60 auteurs pour le 60e anniversaire.",wiki:"https://fr.wikipedia.org/wiki/G%C3%A9n%C3%A9rations_Ast%C3%A9rix"},
+{id:1006,title:"Les 40 Banquets",year:2024,authors:"Collectif",pages:160,isbn:"978-2-01-717878-3",baseValue:30,cover:"https://m.media-amazon.com/images/I/81Sd-8yNmTL._SL1500_.jpg",type:"special",synopsis:"40 recettes pour les Restos du Cœur."},
+{id:1007,title:"Le Secret de la Potion Magique",year:2018,authors:"Astier",pages:48,isbn:"978-2-01-627457-9",baseValue:12,cover:"",type:"illustrated",synopsis:"Album du film d'animation d'Alexandre Astier.",wiki:"https://fr.wikipedia.org/wiki/Ast%C3%A9rix_:_Le_Secret_de_la_potion_magique_(album)",film:[{title:"Le Secret de la Potion Magique",year:2018,type:"Animation 3D (Astier)",allocine:"https://www.allocine.fr/film/fichefilm_gen_cfilm=247628.html"}]}
+];
+
+let customAlbums=JSON.parse(localStorage.getItem('asterix-custom-albums')||'[]');
+let collection=JSON.parse(localStorage.getItem('asterix-collection-v4')||'{}');
+let wishlist=JSON.parse(localStorage.getItem('asterix-wishlist')||'[]');
+let filmsSeen=JSON.parse(localStorage.getItem('asterix-films-seen')||'[]');
+let customLinks=JSON.parse(localStorage.getItem('asterix-custom-links')||'[]');
+let hiddenDefaultLinks=JSON.parse(localStorage.getItem('asterix-hidden-links')||'[]');
+let currentAlbumId=null,searchTerm='',currentTheme=localStorage.getItem('asterix-theme')||'dark';
+let filters={owned:false,missing:false,wishlist:false,read:false,toRead:false,authors:'',type:''};
+let editLinksMode=false;
+document.body.setAttribute('data-theme',currentTheme);updateThemeIcons();
+
+const defaultLinks=[
+    {id:'official',name:'Site officiel',url:'https://www.asterix.com',official:true},
+    {id:'parc',name:'Parc Astérix',url:'https://www.parcasterix.fr',official:true},
+    {id:'editions',name:'Éditions Albert René',url:'https://www.albert-rene.com',official:true}
+];
+
+const newsDatabase=[
+    {title:"Série Netflix : Le Combat des Chefs",period:{start:'2025-01-01',end:'2026-12-31'},excerpt:"Alain Chabat revient aux commandes d'une série d'animation très attendue adaptant l'album culte.",link:"https://www.netflix.com/title/81036388"},
+    {title:"Album 41 : Astérix en Lusitanie",period:{start:'2025-10-01',end:'2026-12-31'},excerpt:"Nos héros découvrent le Portugal dans le nouvel album de Ferri et Conrad, sorti en octobre 2025.",link:"https://www.asterix.com"},
+    {title:"65 ans d'Astérix",period:{start:'2024-10-01',end:'2026-06-01'},excerpt:"La série culte fête son anniversaire avec des événements et expositions dans toute la France.",link:"https://www.asterix.com"},
+    {title:"Parc Astérix : Nouvelle attraction 2026",period:{start:'2026-01-01',end:'2026-12-31'},excerpt:"Le Parc Astérix prépare une nouvelle attraction pour la saison 2026.",link:"https://www.parcasterix.fr"}
+];
+
+const langMap={en:'Anglais',de:'Allemand',es:'Espagnol',it:'Italien',pt:'Portugais',nl:'Néerlandais',latin:'Latin',breton:'Breton',picard:'Picard',other:'Autre'};
+const authorsMap={goscinny:'Goscinny & Uderzo',uderzo:'Uderzo seul',ferri:'Ferri & Conrad'};
+const conditionMap={mint:{label:'Neuf',class:'condition-mint',mult:1.5},good:{label:'Bon',class:'condition-good',mult:1},fair:{label:'Moyen',class:'condition-fair',mult:0.6},poor:{label:'Usé',class:'condition-poor',mult:0.3}};
+const editionMap={eo:'Éd. originale',reprint:'Réédition',collector:'Collector',luxe:'Luxe',pocket:'Poche',pirate:'Pirate'};
+
+function getAllAlbums(){return[...officialAlbums,...specialAlbums,...customAlbums]}
+function toggleTheme(){currentTheme=currentTheme==='dark'?'light':'dark';document.body.setAttribute('data-theme',currentTheme);localStorage.setItem('asterix-theme',currentTheme);updateThemeIcons()}
+function updateThemeIcons(){document.getElementById('icon-dark').classList.toggle('active',currentTheme==='dark');document.getElementById('icon-light').classList.toggle('active',currentTheme==='light')}
+
+function calcValue(album,condition,editionType){
+    let v=album.baseValue||10;
+    if(condition&&conditionMap[condition])v*=conditionMap[condition].mult;
+    if(editionType==='eo')v*=3;
+    else if(editionType==='collector')v*=2;
+    else if(editionType==='luxe')v*=1.5;
+    return Math.round(v);
+}
+
+function renderNews(){
+    const today=new Date().toISOString().split('T')[0];
+    const activeNews=newsDatabase.filter(n=>today>=n.period.start&&today<=n.period.end).slice(0,3);
+    if(activeNews.length===0){document.getElementById('news-section').style.display='none';return;}
+    document.getElementById('news-section').style.display='block';
+    const grid=document.getElementById('news-grid');
+    grid.innerHTML='';
+    activeNews.forEach(n=>{
+        const card=document.createElement('div');card.className='news-card';
+        const title=document.createElement('div');title.className='news-card-title';title.textContent=n.title;
+        const excerpt=document.createElement('div');excerpt.className='news-card-excerpt';excerpt.textContent=n.excerpt+' ';
+        const link=document.createElement('a');link.href=n.link;link.target='_blank';link.rel='noopener noreferrer';link.textContent='En savoir plus';
+        excerpt.appendChild(link);card.appendChild(title);card.appendChild(excerpt);grid.appendChild(card);
+    });
+}
+
+function toggleEditLinks(){
+    editLinksMode=!editLinksMode;
+    document.getElementById('edit-links-btn').textContent=editLinksMode?'✓ Terminer':'✎ Modifier';
+    document.getElementById('add-link-btn').style.display=editLinksMode?'inline-block':'none';
+    renderLinks();
+}
+
+function renderLinks(){
+    const grid=document.getElementById('links-grid');
+    grid.innerHTML='';
+    const visibleDefaults=defaultLinks.filter(l=>!hiddenDefaultLinks.includes(l.id));
+    const allLinks=[...visibleDefaults,...customLinks];
+    
+    allLinks.forEach((l,i)=>{
+        const isDefault=i<visibleDefaults.length;
+        const a=document.createElement('a');
+        if(isValidUrl(l.url)){a.href=l.url;}else{a.href='#';a.onclick=e=>e.preventDefault();}
+        a.target='_blank';
+        a.rel='noopener noreferrer';
+        a.className='useful-link'+(l.official?' official':'');
+        a.textContent=l.name;
+        
+        if(editLinksMode){
+            const btn=document.createElement('button');
+            btn.textContent='×';
+            btn.title='Masquer';
+            btn.style.cssText='background:none;border:none;color:var(--text-secondary);cursor:pointer;margin-left:.35rem;opacity:.6';
+            btn.onclick=e=>{e.preventDefault();e.stopPropagation();isDefault?hideDefaultLink(l.id):removeCustomLink(i-visibleDefaults.length);};
+            a.appendChild(btn);
+        }
+        grid.appendChild(a);
+    });
+    
+    if(editLinksMode&&hiddenDefaultLinks.length>0){
+        const restoreBtn=document.createElement('button');
+        restoreBtn.className='add-link-btn';
+        restoreBtn.style.fontSize='.65rem';
+        restoreBtn.textContent='Restaurer ('+hiddenDefaultLinks.length+')';
+        restoreBtn.onclick=restoreDefaultLinks;
+        grid.appendChild(restoreBtn);
+    }
+}
+
+function hideDefaultLink(id){
+    hiddenDefaultLinks.push(id);
+    localStorage.setItem('asterix-hidden-links',JSON.stringify(hiddenDefaultLinks));
+    renderLinks();
+}
+function restoreDefaultLinks(){
+    hiddenDefaultLinks=[];
+    localStorage.setItem('asterix-hidden-links','[]');
+    renderLinks();
+}
+function removeCustomLink(idx){
+    customLinks.splice(idx,1);
+    localStorage.setItem('asterix-custom-links',JSON.stringify(customLinks));
+    renderLinks();
+}
+
+function openAddLinkModal(){document.getElementById('add-link-modal').classList.add('active');}
+function closeAddLinkModal(){document.getElementById('add-link-modal').classList.remove('active');document.getElementById('link-name').value='';document.getElementById('link-url').value='';}
+function addCustomLink(){
+    const name=document.getElementById('link-name').value.trim();
+    const url=document.getElementById('link-url').value.trim();
+    if(!name||!url){alert('Nom et URL requis');return;}
+    if(!isValidUrl(url)){alert('URL invalide. Utilisez http:// ou https://');return;}
+    customLinks.push({name:name.substring(0,50),url});
+    localStorage.setItem('asterix-custom-links',JSON.stringify(customLinks));
+    renderLinks();closeAddLinkModal();
+}
+
+function renderAlbums(){
+    const grids={official:document.getElementById('official-grid'),special:document.getElementById('special-grid'),custom:document.getElementById('custom-grid')};
+    Object.values(grids).forEach(g=>g.innerHTML='');
+    const filtered={official:officialAlbums.filter(filterAlbum),special:specialAlbums.filter(filterAlbum),custom:customAlbums.filter(filterAlbum)};
+    document.getElementById('official-section').style.display=filtered.official.length?'block':'none';
+    document.getElementById('special-section').style.display=filtered.special.length?'block':'none';
+    document.getElementById('custom-section').style.display=filtered.custom.length?'block':'none';
+    document.getElementById('official-badge').textContent=filtered.official.length;
+    document.getElementById('special-badge').textContent=filtered.special.length;
+    document.getElementById('custom-badge').textContent=filtered.custom.length;
+    filtered.official.forEach(a=>grids.official.appendChild(createAlbumCard(a)));
+    filtered.special.forEach(a=>grids.special.appendChild(createAlbumCard(a)));
+    filtered.custom.forEach(a=>grids.custom.appendChild(createAlbumCard(a)));
+    if(!filtered.official.length&&!filtered.special.length&&!filtered.custom.length){document.getElementById('official-section').style.display='block';grids.official.innerHTML='<div style="grid-column:1/-1;text-align:center;padding:3rem;color:var(--text-secondary);">Aucun album trouvé</div>';}
+}
+
+function filterAlbum(album){
+    const data=collection[album.id]||{},owned=data.owned,readStatus=data.readStatus;
+    
+    // Filtre texte
+    if(searchTerm&&!album.title.toLowerCase().includes(searchTerm.toLowerCase()))return false;
+    
+    // Filtres possession (OR entre eux)
+    const possessionFilters=filters.owned||filters.missing||filters.wishlist;
+    if(possessionFilters){
+        let matchPossession=false;
+        if(filters.owned&&owned)matchPossession=true;
+        if(filters.missing&&!owned)matchPossession=true;
+        if(filters.wishlist&&wishlist.includes(album.id)&&!owned)matchPossession=true;
+        if(!matchPossession)return false;
+    }
+    
+    // Filtres lecture (OR entre eux)
+    const readFilters=filters.read||filters.toRead;
+    if(readFilters){
+        let matchRead=false;
+        if(filters.read&&readStatus==='read')matchRead=true;
+        if(filters.toRead&&readStatus==='to-read')matchRead=true;
+        if(!matchRead)return false;
+    }
+    
+    // Filtre auteur
+    if(filters.authors&&album.authors!==filters.authors)return false;
+    
+    // Filtre type
+    if(filters.type){
+        if(filters.type==='official'&&album.type!=='official')return false;
+        if(filters.type==='special'&&(album.type==='official'||album.id>=10000))return false;
+        if(filters.type==='film'&&!album.film)return false;
+    }
+    
+    return true;
+}
+
+function resetFilters(){
+    filters={owned:false,missing:false,wishlist:false,read:false,toRead:false,authors:'',type:''};
+    document.getElementById('f-owned').checked=false;
+    document.getElementById('f-missing').checked=false;
+    document.getElementById('f-wishlist').checked=false;
+    document.getElementById('f-read').checked=false;
+    document.getElementById('f-to-read').checked=false;
+    document.getElementById('filter-authors').value='';
+    document.getElementById('filter-type').value='';
+    document.getElementById('search').value='';
+    searchTerm='';
+    renderAlbums();
+}
+
+function updateFilters(){
+    filters.owned=document.getElementById('f-owned').checked;
+    filters.missing=document.getElementById('f-missing').checked;
+    filters.wishlist=document.getElementById('f-wishlist').checked;
+    filters.read=document.getElementById('f-read').checked;
+    filters.toRead=document.getElementById('f-to-read').checked;
+    filters.authors=document.getElementById('filter-authors').value;
+    filters.type=document.getElementById('filter-type').value;
+    renderAlbums();
+}
+
+function createAlbumCard(album){
+    const data=collection[album.id]||{},owned=data.owned,condition=data.condition,photos=data.photos||[],isSpecial=album.type!=='official',readStatus=data.readStatus;
+    const mainPhoto=data.mainPhoto!==undefined&&photos[data.mainPhoto]?photos[data.mainPhoto]:null;
+    const inWishlist=wishlist.includes(album.id)&&!owned;
+    const card=document.createElement('div');
+    card.className=`album-card ${owned?'owned':'not-owned'} ${isSpecial?'special':''} ${inWishlist?'in-wishlist':''}`;
+    card.onclick=()=>openModal(album.id);
+    const displayNum=isSpecial?'★':`N°${album.id}`;
+    const authorsDisplay=authorsMap[album.authors]||escapeHTML(album.authors)||'';
+    const safeTitle=escapeHTML(album.title);
+    const safeCover=isValidImageUrl(album.cover)?album.cover:'';
+    const coverSrc=mainPhoto||safeCover||'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 300 400"><rect fill="%230a1915" width="300" height="400"/><text x="150" y="200" text-anchor="middle" fill="%23A8B5B0" font-family="serif" font-size="48">?</text></svg>';
+    const value=owned?calcValue(album,condition,data.editionType):0;
+    const readBadge=readStatus?`<div class="album-read-badge ${escapeHTML(readStatus)}">${readStatus==='read'?'Lu':'À lire'}</div>`:'';
+    const safeEditionType=data.editionType&&editionMap[data.editionType]?escapeHTML(editionMap[data.editionType]):'';
+    const safeEditionYear=escapeHTML(data.editionYear||'');
+    const editionInfo=owned&&(safeEditionType||safeEditionYear)?`<div class="album-edition">${safeEditionType}${safeEditionType&&safeEditionYear?' • ':''}${safeEditionYear}</div>`:'';
+    const versionsCount=data.versions?.length||0;
+    card.innerHTML=`<div class="album-cover"><img src="${escapeHTML(coverSrc)}" alt="${safeTitle}" loading="lazy" onerror="this.src='data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 300 400%22><rect fill=%22%230a1915%22 width=%22300%22 height=%22400%22/><text x=%22150%22 y=%22200%22 text-anchor=%22middle%22 fill=%22%23A8B5B0%22 font-family=%22serif%22 font-size=%2248%22>?</text></svg>'"><div class="album-badges"><div class="album-number ${isSpecial?'special':''}">${displayNum}</div><div class="album-status ${owned?'owned':'not-owned'}">${owned?'✓':''}</div></div>${photos.length?`<div class="photo-count">${photos.length}</div>`:''}${album.film?`<div class="album-film-badge"><svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor"><path d="M18 4l2 4h-3l-2-4h-2l2 4h-3l-2-4H8l2 4H7L5 4H4c-1.1 0-1.99.9-1.99 2L2 18c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V4h-4z"/></svg></div>`:''}${readBadge}</div><div class="album-info"><div class="album-title">${safeTitle}</div><div class="album-meta"><span class="album-year">${album.year||'?'}</span>${authorsDisplay?`<span class="album-authors">${authorsDisplay}</span>`:''}${album.pages?`<span>${album.pages}p</span>`:''}</div>${editionInfo}${versionsCount?`<div class="album-edition" style="color:var(--accent-gold)">+${versionsCount} autre${versionsCount>1?'s':''} version${versionsCount>1?'s':''}</div>`:''}${owned&&value?`<div class="album-value price-field">~${value}€</div>`:''}${owned&&condition?`<div class="album-condition"><span class="condition-badge ${conditionMap[condition].class}">${conditionMap[condition].label}</span></div>`:''}</div>`;
+    return card;
+}
+
+function updateStats(){
+    const all=getAllAlbums();
+    let totalValue=0;
+    Object.entries(collection).forEach(([id,data])=>{
+        if(data.owned){const album=all.find(a=>a.id==id);if(album)totalValue+=calcValue(album,data.condition,data.editionType);}
+    });
+    const ownedCount=Object.values(collection).filter(a=>a.owned).length;
+    const readCount=Object.values(collection).filter(a=>a.readStatus==='read').length;
+    const pct=Math.round((ownedCount/all.length)*100);
+    document.getElementById('owned-count').textContent=ownedCount;
+    document.getElementById('missing-count').textContent=all.length-ownedCount;
+    document.getElementById('read-count').textContent=readCount;
+    document.getElementById('films-seen-count').textContent=filmsSeen.length;
+    document.getElementById('value-count').textContent=totalValue>0?`${totalValue}€`:'0€';
+    document.getElementById('progress-fill').style.width=pct+'%';
+    document.getElementById('progress-text').textContent=pct+'%';
+    document.getElementById('wishlist-count-btn').textContent=wishlist.filter(id=>!collection[id]?.owned).length;
+}
+
+function openModal(albumId){
+    currentAlbumId=albumId;const album=getAllAlbums().find(a=>a.id===albumId);if(!album)return;
+    const data=collection[albumId]||{},isSpecial=album.type!=='official';
+    document.getElementById('modal-title').textContent=`${isSpecial?'★ ':`N°${album.id} - `}${album.title}`;
+    document.getElementById('modal-album-title').textContent=album.title;
+    document.getElementById('modal-cover').src=isValidImageUrl(album.cover)?album.cover:'';
+    document.getElementById('modal-year').textContent=album.year?`${album.year}`:'';
+    document.getElementById('modal-authors').textContent=authorsMap[album.authors]||album.authors||'';
+    document.getElementById('modal-pages').textContent=album.pages?`${album.pages} pages`:'';
+    document.getElementById('modal-synopsis').textContent=album.synopsis||'Pas de résumé.';
+    
+    // Lien Wikipedia de l'album (DOM sécurisé)
+    const wikiContainer=document.getElementById('wiki-album-link');
+    wikiContainer.innerHTML='';
+    if(album.wiki&&isValidUrl(album.wiki)){
+        const wikiLink=document.createElement('a');
+        wikiLink.href=album.wiki;wikiLink.target='_blank';wikiLink.rel='noopener noreferrer';
+        wikiLink.style.cssText='display:inline-flex;align-items:center;gap:.35rem;color:var(--wiki-blue);text-decoration:none;font-size:.75rem;';
+        const wikiSpan=document.createElement('span');wikiSpan.className='wiki-link';wikiSpan.textContent='W';
+        wikiLink.appendChild(wikiSpan);wikiLink.appendChild(document.createTextNode(' Voir sur Wikipedia'));
+        wikiContainer.appendChild(wikiLink);
+    }
+    
+    if(album.film){
+        document.getElementById('modal-film-badge').style.display='block';
+        document.getElementById('modal-film-info').style.display='block';
+        const filmDetails=document.getElementById('modal-film-details');
+        filmDetails.innerHTML='';
+        album.film.forEach(f=>{
+            const filmKey=album.id+'-'+f.year;
+            const isSeen=filmsSeen.includes(filmKey);
+            const filmItem=document.createElement('div');filmItem.className='film-item';
+            const filmInfo=document.createElement('div');
+            const strong=document.createElement('strong');strong.textContent=escapeHTML(f.title);
+            filmInfo.appendChild(strong);filmInfo.appendChild(document.createTextNode(` (${f.year}) - ${escapeHTML(f.type)}`));
+            const filmActions=document.createElement('div');filmActions.style.cssText='display:flex;gap:.25rem;align-items:center;';
+            const seenBtn=document.createElement('button');seenBtn.className='film-seen-btn'+(isSeen?' seen':'');seenBtn.textContent=isSeen?'✓ Vu':'○ Pas vu';
+            seenBtn.onclick=e=>{e.stopPropagation();toggleFilmSeen(filmKey);};
+            filmActions.appendChild(seenBtn);
+            if(f.allocine&&isValidUrl(f.allocine)){
+                const acLink=document.createElement('a');acLink.href=f.allocine;acLink.target='_blank';acLink.rel='noopener noreferrer';
+                acLink.className='allocine-link';acLink.title='Allociné';acLink.textContent='AC';acLink.onclick=e=>e.stopPropagation();
+                filmActions.appendChild(acLink);
+            }
+            filmItem.appendChild(filmInfo);filmItem.appendChild(filmActions);filmDetails.appendChild(filmItem);
+        });
+        document.getElementById('modal-film-links').innerHTML='';
+    }else{
+        document.getElementById('modal-film-badge').style.display='none';
+        document.getElementById('modal-film-info').style.display='none';
+    }
+    
+    document.getElementById('btn-owned').classList.remove('active');document.getElementById('btn-not-owned').classList.remove('active','active-no');document.getElementById('btn-wishlist').classList.remove('active','active-wish');
+    document.querySelectorAll('.condition-btn').forEach(b=>b.classList.remove('active','mint','good','fair','poor'));
+    document.querySelectorAll('.read-btn').forEach(b=>b.classList.remove('active','read','to-read'));
+    
+    // Champs de mon édition
+    document.getElementById('edition-year').value=data.editionYear||'';
+    document.getElementById('edition-type').value=data.editionType||'';
+    document.getElementById('my-isbn').value=data.myIsbn||'';
+    document.getElementById('my-tirage').value=data.myTirage||'';
+    document.getElementById('acquisition-date').value=data.acquisitionDate||'';
+    document.getElementById('acquisition-channel').value=data.acquisitionChannel||'';
+    document.getElementById('purchase-price').value=data.purchasePrice||'';
+    document.getElementById('notes').value=data.notes||'';
+    
+    // Référence édition originale dans l'en-tête
+    let refParts=[];
+    if(album.isbn)refParts.push(`<strong>ISBN EO:</strong> ${album.isbn}`);
+    if(album.tirage)refParts.push(`<strong>1er tirage:</strong> ${album.tirage}`);
+    const refEl=document.getElementById('modal-ref-eo');
+    if(refParts.length){
+        refEl.innerHTML=refParts.join(' • ');
+        refEl.style.display='block';
+    }else{
+        refEl.style.display='none';
+    }
+    
+    // Afficher le statut de lecture (indépendant de la possession)
+    if(data.readStatus){const rb=document.querySelector(`.read-btn[data-read="${data.readStatus}"]`);if(rb)rb.classList.add('active',data.readStatus);}
+    
+    if(data.owned){
+        document.getElementById('btn-owned').classList.add('active');
+        document.getElementById('owned-fields').style.display='block';
+        if(data.condition){const cb=document.querySelector(`.condition-btn[data-condition="${data.condition}"]`);if(cb)cb.classList.add('active',data.condition);}
+        updateAutoValue();
+    }else{
+        document.getElementById('btn-not-owned').classList.add('active','active-no');
+        document.getElementById('owned-fields').style.display='none';
+        if(wishlist.includes(albumId)){document.getElementById('btn-wishlist').classList.add('active','active-wish');}
+    }
+    renderPhotos();renderVersions();document.getElementById('modal').classList.add('active');
+}
+
+function renderVersions(){
+    const data=collection[currentAlbumId]||{};
+    const versions=data.versions||[];
+    document.getElementById('versions-list').innerHTML=versions.map((v,i)=>`<div class="version-item"><div class="version-info"><span class="version-lang">${escapeHTML(langMap[v.lang]||v.lang)}</span>${v.note?`<span class="version-note">${escapeHTML(v.note)}</span>`:''}<span class="version-price">${v.price?escapeHTML(v.price)+'€':''}</span></div><button class="version-remove" onclick="removeVersion(${i})">×</button></div>`).join('');
+}
+
+function addVersion(){
+    const lang=document.getElementById('version-lang').value;
+    const note=document.getElementById('version-note').value.trim();
+    if(!lang){alert('Choisissez une langue');return;}
+    if(!collection[currentAlbumId])collection[currentAlbumId]={versions:[]};
+    if(!collection[currentAlbumId].versions)collection[currentAlbumId].versions=[];
+    collection[currentAlbumId].versions.push({lang,note});
+    document.getElementById('version-lang').value='';
+    document.getElementById('version-note').value='';
+    renderVersions();
+}
+
+function removeVersion(idx){
+    if(collection[currentAlbumId]?.versions){
+        collection[currentAlbumId].versions.splice(idx,1);
+        renderVersions();
+    }
+}
+
+function onEditionTypeChange(){
+    const album=getAllAlbums().find(a=>a.id===currentAlbumId);
+    if(!album)return;
+    const editionType=document.getElementById('edition-type').value;
+    
+    // Si édition originale, pré-remplir ISBN et tirage avec les valeurs de référence
+    if(editionType==='eo'){
+        if(!document.getElementById('my-isbn').value&&album.isbn){
+            document.getElementById('my-isbn').value=album.isbn;
+        }
+        if(!document.getElementById('my-tirage').value&&album.tirage){
+            document.getElementById('my-tirage').value=album.tirage;
+        }
+        if(!document.getElementById('edition-year').value&&album.year){
+            document.getElementById('edition-year').value=album.year;
+        }
+    }
+    updateAutoValue();
+}
+
+function updateAutoValue(){
+    const album=getAllAlbums().find(a=>a.id===currentAlbumId);if(!album)return;
+    const condBtn=document.querySelector('.condition-btn.active');
+    const condition=condBtn?.dataset.condition;
+    const editionType=document.getElementById('edition-type').value;
+    const value=calcValue(album,condition,editionType);
+    document.getElementById('estimated-value').value=value;
+    document.getElementById('value-auto').textContent=`Auto: ~${value}€`;
+}
+
+function closeModal(){document.getElementById('modal').classList.remove('active');currentAlbumId=null;}
+function setOwned(owned){
+    document.getElementById('btn-owned').classList.toggle('active',owned);
+    document.getElementById('btn-not-owned').classList.toggle('active',!owned);
+    document.getElementById('btn-not-owned').classList.toggle('active-no',!owned);
+    document.getElementById('owned-fields').style.display=owned?'block':'none';
+    if(owned){
+        updateAutoValue();
+        const idx=wishlist.indexOf(currentAlbumId);
+        if(idx>-1){wishlist.splice(idx,1);localStorage.setItem('asterix-wishlist',JSON.stringify(wishlist));}
+        document.getElementById('btn-wishlist').classList.remove('active','active-wish');
+    }
+}
+function toggleWishlist(){
+    if(collection[currentAlbumId]?.owned)return;
+    const idx=wishlist.indexOf(currentAlbumId);
+    if(idx>-1){wishlist.splice(idx,1);document.getElementById('btn-wishlist').classList.remove('active','active-wish');}
+    else{wishlist.push(currentAlbumId);document.getElementById('btn-wishlist').classList.add('active','active-wish');}
+    localStorage.setItem('asterix-wishlist',JSON.stringify(wishlist));updateStats();
+}
+function toggleFilmSeen(filmKey){
+    const idx=filmsSeen.indexOf(filmKey);
+    if(idx>-1)filmsSeen.splice(idx,1);else filmsSeen.push(filmKey);
+    localStorage.setItem('asterix-films-seen',JSON.stringify(filmsSeen));
+    updateStats();
+    const album=getAllAlbums().find(a=>a.id===currentAlbumId);
+    if(album&&album.film){
+        document.getElementById('modal-film-details').innerHTML=album.film.map(f=>{
+            const fk=album.id+'-'+f.year;
+            const seen=filmsSeen.includes(fk);
+            return `<div class="film-item"><div><strong>${f.title}</strong> (${f.year}) - ${f.type}</div><div style="display:flex;gap:.25rem;align-items:center;"><button class="film-seen-btn ${seen?'seen':''}" onclick="event.stopPropagation();toggleFilmSeen('${fk}')">${seen?'✓ Vu':'○ Pas vu'}</button>${f.allocine?`<a href="${f.allocine}" target="_blank" class="allocine-link" onclick="event.stopPropagation()" title="Allociné">AC</a>`:''}</div></div>`;
+        }).join('');
+    }
+}
+function setCondition(c){document.querySelectorAll('.condition-btn').forEach(b=>{b.classList.remove('active','mint','good','fair','poor');if(b.dataset.condition===c)b.classList.add('active',c);});updateAutoValue();}
+function setReadStatus(s){document.querySelectorAll('.read-btn').forEach(b=>{b.classList.remove('active','read','to-read');if(b.dataset.read===s)b.classList.add('active',s);});}
+
+document.getElementById('edition-type').addEventListener('change',updateAutoValue);
+
+function renderPhotos(){const data=collection[currentAlbumId]||{},photos=data.photos||[],mainIdx=data.mainPhoto||0,grid=document.getElementById('photo-grid');grid.innerHTML=photos.map((p,i)=>{const safeSrc=isValidImageUrl(p)?p:'';return`<div class="photo-item ${i===mainIdx?'main':''}" onclick="setMainPhoto(${i})" title="Définir comme principale"><img src="${safeSrc}" alt=""><span class="photo-main-badge">${i===mainIdx?'★':''}</span><button class="photo-remove" onclick="event.stopPropagation();removePhoto(${i})">×</button></div>`;}).join('');}
+function setMainPhoto(i){if(!collection[currentAlbumId])collection[currentAlbumId]={};collection[currentAlbumId].mainPhoto=i;renderPhotos();}
+function addPhotos(e){const files=e.target.files;if(!files.length)return;if(!collection[currentAlbumId])collection[currentAlbumId]={photos:[]};if(!collection[currentAlbumId].photos)collection[currentAlbumId].photos=[];Array.from(files).forEach(f=>{const r=new FileReader();r.onload=ev=>{collection[currentAlbumId].photos.push(ev.target.result);renderPhotos();};r.readAsDataURL(f);});e.target.value='';}
+function removePhoto(i){if(collection[currentAlbumId]?.photos){collection[currentAlbumId].photos.splice(i,1);if(collection[currentAlbumId].mainPhoto>=i)collection[currentAlbumId].mainPhoto=Math.max(0,collection[currentAlbumId].mainPhoto-1);renderPhotos();}}
+function saveAlbum(){
+    const owned=document.getElementById('btn-owned').classList.contains('active');
+    const condBtn=document.querySelector('.condition-btn.active');
+    const readBtn=document.querySelector('.read-btn.active');
+    const existing=collection[currentAlbumId]||{};
+    collection[currentAlbumId]={
+        owned,
+        condition:owned?(condBtn?.dataset.condition||null):null,
+        readStatus:readBtn?.dataset.read||null,
+        editionYear:owned?document.getElementById('edition-year').value:'',
+        editionType:owned?document.getElementById('edition-type').value:'',
+        myIsbn:owned?document.getElementById('my-isbn').value:'',
+        myTirage:owned?document.getElementById('my-tirage').value:'',
+        acquisitionDate:owned?document.getElementById('acquisition-date').value:'',
+        acquisitionChannel:owned?document.getElementById('acquisition-channel').value:'',
+        purchasePrice:owned?document.getElementById('purchase-price').value:'',
+        notes:owned?document.getElementById('notes').value:'',
+        photos:owned?(existing.photos||[]):[],
+        mainPhoto:owned?(existing.mainPhoto||0):0,
+        versions:existing.versions||[]
+    };
+    localStorage.setItem('asterix-collection-v4',JSON.stringify(collection));
+    updateStats();renderAlbums();closeModal();
+}
+
+function openAddModal(){document.getElementById('add-modal').classList.add('active');}
+function closeAddModal(){document.getElementById('add-modal').classList.remove('active');}
+function addNewAlbum(){const title=document.getElementById('new-title').value.trim();if(!title){alert('Titre requis');return;}const maxId=Math.max(10000,...customAlbums.map(a=>a.id));const newAlbum={id:maxId+1,title,year:parseInt(document.getElementById('new-year').value)||null,pages:parseInt(document.getElementById('new-pages').value)||null,type:document.getElementById('new-type').value,authors:document.getElementById('new-authors').value.trim(),cover:document.getElementById('new-cover').value.trim(),synopsis:document.getElementById('new-synopsis').value.trim(),baseValue:10};customAlbums.push(newAlbum);localStorage.setItem('asterix-custom-albums',JSON.stringify(customAlbums));collection[newAlbum.id]={owned:true};localStorage.setItem('asterix-collection-v4',JSON.stringify(collection));updateStats();renderAlbums();closeAddModal();}
+
+function openCompareModal(){const all=getAllAlbums();const byAuthor={goscinny:0,uderzo:0,ferri:0,other:0},byCondition={mint:0,good:0,fair:0,poor:0},byRead={read:0,'to-read':0};let totalValue=0;Object.entries(collection).forEach(([id,data])=>{if(data.owned){const album=all.find(a=>a.id==id);if(album){if(byAuthor[album.authors]!==undefined)byAuthor[album.authors]++;else byAuthor.other++;if(data.condition)byCondition[data.condition]++;if(data.readStatus)byRead[data.readStatus]++;totalValue+=calcValue(album,data.condition,data.editionType);}}});document.getElementById('compare-content').innerHTML=`<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:1rem;margin-bottom:1.5rem;"><div class="compare-card"><h4>Par auteur</h4><div class="compare-stat">Goscinny & Uderzo: <strong>${byAuthor.goscinny}</strong></div><div class="compare-stat">Uderzo seul: <strong>${byAuthor.uderzo}</strong></div><div class="compare-stat">Ferri & Conrad: <strong>${byAuthor.ferri}</strong></div><div class="compare-stat">Autres: <strong>${byAuthor.other}</strong></div></div><div class="compare-card"><h4>Par état</h4><div class="compare-stat">Neuf: <strong>${byCondition.mint}</strong></div><div class="compare-stat">Bon: <strong>${byCondition.good}</strong></div><div class="compare-stat">Moyen: <strong>${byCondition.fair}</strong></div><div class="compare-stat">Usé: <strong>${byCondition.poor}</strong></div></div><div class="compare-card"><h4>Lecture</h4><div class="compare-stat">Lus: <strong>${byRead.read}</strong></div><div class="compare-stat">À lire: <strong>${byRead['to-read']}</strong></div></div><div class="compare-card price-field"><h4>Valeur</h4><div class="compare-stat">Total: <strong>${totalValue}€</strong></div></div></div><h4 style="margin-bottom:.75rem;">Progression</h4><div class="compare-stat">Série officielle: <strong>${Object.entries(collection).filter(([id,d])=>d.owned&&officialAlbums.find(a=>a.id==id)).length}</strong> / ${officialAlbums.length}</div><div class="compare-stat">Albums avec film: <strong>${Object.entries(collection).filter(([id,d])=>d.owned&&all.find(a=>a.id==id&&a.film)).length}</strong></div>`;document.getElementById('compare-modal').classList.add('active');}
+function closeCompareModal(){document.getElementById('compare-modal').classList.remove('active');}
+
+function openWishlistModal(){
+    const all=getAllAlbums();
+    const wishlistAlbums=all.filter(a=>wishlist.includes(a.id)&&!collection[a.id]?.owned);
+    const container=document.getElementById('wishlist-content');
+    container.innerHTML='';
+    if(wishlistAlbums.length===0){
+        container.innerHTML='<div style="text-align:center;padding:2rem;color:var(--text-secondary);">Votre liste de souhaits est vide.<br>Ajoutez des albums en cliquant sur ♥ Wishlist dans leur fiche.</div>';
+    }else{
+        const grid=document.createElement('div');grid.className='albums-grid';
+        wishlistAlbums.forEach(a=>{
+            const isSpecial=a.type!=='official';
+            const card=document.createElement('div');card.className='album-card';card.style.cursor='pointer';
+            card.onclick=()=>{closeWishlistModal();openModal(a.id);};
+            const safeTitle=escapeHTML(a.title);
+            const safeCover=isValidImageUrl(a.cover)?escapeHTML(a.cover):'';
+            card.innerHTML=`<div class="album-cover"><img src="${safeCover}" alt="${safeTitle}" loading="lazy"><div class="album-badges"><div class="album-number ${isSpecial?'special':''}">${isSpecial?'★':'N°'+a.id}</div></div></div><div class="album-info"><div class="album-title">${safeTitle}</div><div class="album-meta"><span class="album-year">${a.year||'?'}</span></div><div class="album-value price-field">~${a.baseValue||10}€</div></div>`;
+            grid.appendChild(card);
+        });
+        container.appendChild(grid);
+    }
+    document.getElementById('wishlist-modal').classList.add('active');
+}
+function closeWishlistModal(){document.getElementById('wishlist-modal').classList.remove('active');}
+
+// Utilitaires de sécurité
+function escapeHTML(str){if(!str)return'';return String(str).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));}
+function isValidUrl(str){try{const url=new URL(str);return['http:','https:'].includes(url.protocol);}catch{return false;}}
+function isValidImageUrl(str){if(!str)return true;if(str.startsWith('data:image/'))return true;return isValidUrl(str);}
+function sanitizeString(str,maxLen=500){if(!str)return'';return String(str).substring(0,maxLen);}
+function sanitizeNumber(val,min=0,max=10000){const n=parseInt(val);if(isNaN(n))return null;return Math.max(min,Math.min(max,n));}
+
+function sanitizeCollectionData(data){
+    if(!data||typeof data!=='object')return{};
+    const clean={};
+    const allowedFields=['owned','condition','readStatus','editionYear','editionType','myIsbn','acquisitionDate','acquisitionChannel','purchasePrice','notes','photos','mainPhoto','versions'];
+    const allowedConditions=['mint','good','fair','poor'];
+    const allowedReadStatus=['read','to-read'];
+    const allowedEditionTypes=['eo','reprint','collector','luxe','pocket','pirate'];
+    
+    for(const[id,item]of Object.entries(data)){
+        if(!/^\d+$/.test(id))continue;
+        const entry={};
+        if(typeof item.owned==='boolean')entry.owned=item.owned;
+        if(allowedConditions.includes(item.condition))entry.condition=item.condition;
+        if(allowedReadStatus.includes(item.readStatus))entry.readStatus=item.readStatus;
+        if(allowedEditionTypes.includes(item.editionType))entry.editionType=item.editionType;
+        if(item.editionYear)entry.editionYear=sanitizeString(item.editionYear,10);
+        if(item.myIsbn)entry.myIsbn=sanitizeString(item.myIsbn,20);
+        if(item.acquisitionDate)entry.acquisitionDate=sanitizeString(item.acquisitionDate,10);
+        if(item.acquisitionChannel)entry.acquisitionChannel=sanitizeString(item.acquisitionChannel,20);
+        if(item.purchasePrice)entry.purchasePrice=sanitizeString(item.purchasePrice,10);
+        if(item.notes)entry.notes=sanitizeString(item.notes,1000);
+        if(Array.isArray(item.photos))entry.photos=item.photos.filter(p=>typeof p==='string'&&p.startsWith('data:image/')).slice(0,20);
+        if(typeof item.mainPhoto==='number')entry.mainPhoto=sanitizeNumber(item.mainPhoto,0,20);
+        if(Array.isArray(item.versions))entry.versions=item.versions.filter(v=>v&&typeof v==='object').slice(0,10).map(v=>({lang:sanitizeString(v.lang,20),note:sanitizeString(v.note,100)}));
+        clean[id]=entry;
+    }
+    return clean;
+}
+
+function sanitizeCustomAlbums(albums){
+    if(!Array.isArray(albums))return[];
+    return albums.slice(0,50).map(a=>({
+        id:sanitizeNumber(a.id,10001,99999)||Date.now(),
+        title:sanitizeString(a.title,100)||'Sans titre',
+        year:sanitizeNumber(a.year,1900,2100),
+        pages:sanitizeNumber(a.pages,1,1000),
+        type:['official','special','custom'].includes(a.type)?a.type:'custom',
+        authors:sanitizeString(a.authors,50),
+        cover:isValidImageUrl(a.cover)?sanitizeString(a.cover,500):'',
+        synopsis:sanitizeString(a.synopsis,500),
+        baseValue:sanitizeNumber(a.baseValue,1,1000)||10
+    }));
+}
+
+function exportJSON(){
+    const all=getAllAlbums(),exportData={exportDate:new Date().toISOString(),version:'1.0',collection:collection,wishlist:wishlist,filmsSeen:filmsSeen,customAlbums:customAlbums,customLinks:customLinks,hiddenDefaultLinks:hiddenDefaultLinks,stats:{total:Object.values(collection).filter(a=>a.owned).length}};
+    let totalValue=0;
+    Object.entries(collection).forEach(([id,data])=>{const album=all.find(a=>a.id==id);if(album&&data.owned){totalValue+=calcValue(album,data.condition,data.editionType);}});
+    exportData.stats.totalValue=totalValue;
+    const blob=new Blob([JSON.stringify(exportData,null,2)],{type:'application/json'}),a=document.createElement('a');
+    a.href=URL.createObjectURL(blob);a.download='collection-asterix-'+new Date().toISOString().split('T')[0]+'.json';a.click();
+}
+
+function importJSON(){
+    const input=document.createElement('input');
+    input.type='file';input.accept='.json';
+    input.onchange=e=>{
+        const file=e.target.files[0];if(!file)return;
+        if(file.size>10*1024*1024){alert('Fichier trop volumineux (max 10MB)');return;}
+        const reader=new FileReader();
+        reader.onload=ev=>{
+            try{
+                const data=JSON.parse(ev.target.result);
+                if(!data.collection||typeof data.collection!=='object'){alert('Fichier invalide : collection manquante');return;}
+                const exportDate=data.exportDate?new Date(data.exportDate):null;
+                const dateStr=exportDate&&!isNaN(exportDate)?exportDate.toLocaleDateString('fr-FR'):'date inconnue';
+                if(!confirm(`Importer cette sauvegarde du ${dateStr} ?\n\nCela remplacera toutes vos données actuelles.`))return;
+                
+                // Sanitize toutes les données
+                collection=sanitizeCollectionData(data.collection);
+                wishlist=Array.isArray(data.wishlist)?data.wishlist.filter(id=>typeof id==='number'&&id>0).slice(0,500):[];
+                filmsSeen=Array.isArray(data.filmsSeen)?data.filmsSeen.filter(s=>typeof s==='string'&&s.length<50).slice(0,200):[];
+                customAlbums=sanitizeCustomAlbums(data.customAlbums);
+                customLinks=Array.isArray(data.customLinks)?data.customLinks.filter(l=>l&&typeof l.name==='string'&&isValidUrl(l.url)).slice(0,20).map(l=>({name:sanitizeString(l.name,50),url:l.url})):[];
+                hiddenDefaultLinks=Array.isArray(data.hiddenDefaultLinks)?data.hiddenDefaultLinks.filter(id=>typeof id==='string'&&id.length<30).slice(0,10):[];
+                
+                localStorage.setItem('asterix-collection-v4',JSON.stringify(collection));
+                localStorage.setItem('asterix-wishlist',JSON.stringify(wishlist));
+                localStorage.setItem('asterix-films-seen',JSON.stringify(filmsSeen));
+                localStorage.setItem('asterix-custom-albums',JSON.stringify(customAlbums));
+                localStorage.setItem('asterix-custom-links',JSON.stringify(customLinks));
+                localStorage.setItem('asterix-hidden-links',JSON.stringify(hiddenDefaultLinks));
+                updateStats();renderAlbums();renderLinks();
+                alert('Import réussi ! '+Object.values(collection).filter(a=>a.owned).length+' albums importés.');
+            }catch(err){alert('Erreur de lecture du fichier: '+err.message);}
+        };
+        reader.readAsText(file);
+    };
+    input.click();
+}
+
+function exportPDF(){
+    const{jsPDF}=window.jspdf;
+    const doc=new jsPDF();
+    const all=getAllAlbums();
+    const owned=all.filter(a=>collection[a.id]?.owned);
+    
+    doc.setFontSize(20);doc.setTextColor(196,120,90);
+    doc.text('Ma Collection Astérix',105,20,{align:'center'});
+    doc.setFontSize(10);doc.setTextColor(100);
+    doc.text('Exporté le '+new Date().toLocaleDateString('fr-FR'),105,28,{align:'center'});
+    
+    doc.setFontSize(12);doc.setTextColor(0);
+    doc.text('Albums possédés: '+owned.length+' / '+all.length,14,40);
+    let totalValue=0;owned.forEach(a=>{const d=collection[a.id];totalValue+=calcValue(a,d.condition,d.editionType);});
+    doc.text('Valeur estimée: '+totalValue+'€',14,48);
+    doc.text('Films vus: '+filmsSeen.length,14,56);
+    
+    const tableData=owned.map(a=>{
+        const d=collection[a.id];
+        return[a.id>1000?'HS':a.id,a.title,a.year||'-',conditionMap[d.condition]?.label||'-',d.editionType?editionMap[d.editionType]:'-',calcValue(a,d.condition,d.editionType)+'€'];
+    });
+    
+    doc.autoTable({startY:65,head:[['#','Titre','Année','État','Édition','Valeur']],body:tableData,styles:{fontSize:8},headStyles:{fillColor:[196,120,90]}});
+    
+    const wishlistAlbums=all.filter(a=>wishlist.includes(a.id)&&!collection[a.id]?.owned);
+    if(wishlistAlbums.length>0){
+        doc.addPage();
+        doc.setFontSize(16);doc.setTextColor(196,165,90);
+        doc.text('Liste de Souhaits',14,20);
+        const wishData=wishlistAlbums.map(a=>[a.id>1000?'HS':a.id,a.title,a.year||'-',(a.baseValue||10)+'€']);
+        doc.autoTable({startY:30,head:[['#','Titre','Année','Valeur']],body:wishData,styles:{fontSize:8},headStyles:{fillColor:[196,165,90]}});
+    }
+    
+    doc.save('collection-asterix-'+new Date().toISOString().split('T')[0]+'.pdf');
+}
+
+function exportXLS(){
+    const all=getAllAlbums();
+    const owned=all.filter(a=>collection[a.id]?.owned);
+    
+    const collectionData=[['#','Titre','Année','Auteurs','État','Édition','Valeur','Lu','Notes']];
+    owned.forEach(a=>{
+        const d=collection[a.id];
+        collectionData.push([a.id>1000?'HS-'+a.id:a.id,a.title,a.year||'',authorsMap[a.authors]||a.authors||'',conditionMap[d.condition]?.label||'',d.editionType?editionMap[d.editionType]:'',calcValue(a,d.condition,d.editionType),d.readStatus==='read'?'Oui':'Non',d.notes||'']);
+    });
+    
+    const wishlistData=[['#','Titre','Année','Valeur']];
+    all.filter(a=>wishlist.includes(a.id)&&!collection[a.id]?.owned).forEach(a=>{wishlistData.push([a.id>1000?'HS-'+a.id:a.id,a.title,a.year||'',a.baseValue||10]);});
+    
+    const filmsData=[['Album','Film','Année','Type','Vu']];
+    all.filter(a=>a.film).forEach(a=>{a.film.forEach(f=>{const filmKey=a.id+'-'+f.year;filmsData.push([a.title,f.title,f.year,f.type,filmsSeen.includes(filmKey)?'Oui':'Non']);});});
+    
+    const wb=XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb,XLSX.utils.aoa_to_sheet(collectionData),'Collection');
+    XLSX.utils.book_append_sheet(wb,XLSX.utils.aoa_to_sheet(wishlistData),'Wishlist');
+    XLSX.utils.book_append_sheet(wb,XLSX.utils.aoa_to_sheet(filmsData),'Films');
+    
+    XLSX.writeFile(wb,'collection-asterix-'+new Date().toISOString().split('T')[0]+'.xlsx');
+}
+
+// Event listeners pour les filtres combinables
+['f-owned','f-missing','f-wishlist','f-read','f-to-read'].forEach(id=>document.getElementById(id).addEventListener('change',updateFilters));
+document.getElementById('filter-authors').addEventListener('change',updateFilters);
+document.getElementById('filter-type').addEventListener('change',updateFilters);
+document.getElementById('search').addEventListener('input',e=>{searchTerm=e.target.value;renderAlbums();});
+
+// Event listeners pour les modales
+['modal','add-modal','compare-modal','wishlist-modal','add-link-modal'].forEach(id=>document.getElementById(id).addEventListener('click',e=>{if(e.target.id===id){if(id==='modal')closeModal();else if(id==='add-modal')closeAddModal();else if(id==='compare-modal')closeCompareModal();else if(id==='wishlist-modal')closeWishlistModal();else closeAddLinkModal();}}));
+document.addEventListener('keydown',e=>{if(e.key==='Escape'){closeModal();closeAddModal();closeCompareModal();closeWishlistModal();closeAddLinkModal();closeScannerModal();}});
+
+// ISBN Scanner
+let scannerActive=false;
+let lastScannedCode='';
+
+function openScannerModal(){
+    document.getElementById('scanner-modal').classList.add('active');
+    document.getElementById('scanner-result').innerHTML='<div style="color:var(--text-secondary);font-size:.85rem;">Initialisation de la caméra...</div>';
+    startScanner();
+}
+
+function closeScannerModal(){
+    document.getElementById('scanner-modal').classList.remove('active');
+    stopScanner();
+    document.getElementById('manual-isbn').value='';
+    lastScannedCode='';
+}
+
+function startScanner(){
+    if(typeof Quagga==='undefined'){
+        document.getElementById('scanner-result').innerHTML='<div style="color:var(--negative);">Scanner non disponible. Utilisez la saisie manuelle.</div>';
+        return;
+    }
+    Quagga.init({
+        inputStream:{
+            name:"Live",
+            type:"LiveStream",
+            target:document.getElementById('scanner-viewport'),
+            constraints:{
+                facingMode:"environment",
+                width:{ideal:1280},
+                height:{ideal:720}
+            }
+        },
+        decoder:{
+            readers:["ean_reader","ean_8_reader"]
+        },
+        locate:true
+    },function(err){
+        if(err){
+            console.error('Scanner init error:',err);
+            document.getElementById('scanner-result').innerHTML='<div style="color:var(--negative);">Caméra non disponible. Utilisez la saisie manuelle.</div>';
+            return;
+        }
+        Quagga.start();
+        scannerActive=true;
+        document.getElementById('scanner-result').innerHTML='<div style="color:var(--text-secondary);font-size:.85rem;">Pointez la caméra vers le code-barres ISBN</div>';
+    });
+    Quagga.onDetected(onBarcodeDetected);
+}
+
+function stopScanner(){
+    if(scannerActive&&typeof Quagga!=='undefined'){
+        Quagga.stop();
+        scannerActive=false;
+    }
+}
+
+function onBarcodeDetected(result){
+    const code=result.codeResult.code;
+    if(code===lastScannedCode)return;
+    if(!/^97[89]\d{10}$/.test(code)&&!/^\d{10}$/.test(code))return;
+    lastScannedCode=code;
+    lookupISBN(code);
+}
+
+function lookupManualISBN(){
+    const isbn=document.getElementById('manual-isbn').value.replace(/[-\s]/g,'').trim();
+    if(!isbn){return;}
+    if(!/^97[89]\d{10}$/.test(isbn)&&!/^\d{10}$/.test(isbn)&&!/^\d{13}$/.test(isbn)){
+        document.getElementById('scanner-result').innerHTML='<div style="color:var(--negative);">ISBN invalide. Format attendu: 13 chiffres (978...)</div>';
+        return;
+    }
+    lookupISBN(isbn);
+}
+
+function lookupISBN(isbn){
+    const allAlbums=getAllAlbums();
+    const found=allAlbums.find(a=>a.isbn&&a.isbn.replace(/[-\s]/g,'')===isbn);
+    const resultDiv=document.getElementById('scanner-result');
+    
+    if(found){
+        const data=collection[found.id]||{};
+        const owned=data.owned;
+        const condition=data.condition||'';
+        const conditionLabel=condition?({'mint':'Mint','good':'Bon','fair':'Correct','poor':'Usé'}[condition]||condition):'';
+        
+        if(owned){
+            resultDiv.innerHTML=`
+                <div class="scanner-result-title">${escapeHTML(found.title)}</div>
+                <div class="scanner-result-isbn">ISBN: ${escapeHTML(isbn)}</div>
+                <div class="scanner-result-status owned">✓ Déjà dans ta collection${conditionLabel?' • État: '+conditionLabel:''}</div>
+                <div class="scanner-result-actions">
+                    <button class="btn btn-secondary" onclick="closeScannerModal();openModal(${found.id})">Voir détails</button>
+                </div>
+            `;
+        }else{
+            resultDiv.innerHTML=`
+                <div class="scanner-result-title">${escapeHTML(found.title)}</div>
+                <div class="scanner-result-isbn">ISBN: ${escapeHTML(isbn)}</div>
+                <div class="scanner-result-status missing">○ Tu ne l'as pas encore !</div>
+                <div class="scanner-result-actions">
+                    <button class="btn btn-primary" onclick="quickAdd(${found.id})">+ Ajouter à ma collection</button>
+                    <button class="btn btn-secondary" onclick="closeScannerModal();openModal(${found.id})">Détails</button>
+                </div>
+            `;
+        }
+    }else{
+        // ISBN inconnu → chercher sur Open Library
+        resultDiv.innerHTML=`
+            <div class="scanner-result-title">Recherche en cours...</div>
+            <div class="scanner-result-isbn">ISBN: ${escapeHTML(isbn)}</div>
+            <div class="scanner-result-status unknown">Consultation Open Library...</div>
+        `;
+        lookupOpenLibrary(isbn);
+    }
+}
+
+async function lookupOpenLibrary(isbn){
+    const resultDiv=document.getElementById('scanner-result');
+    try{
+        const res=await fetch(`https://openlibrary.org/isbn/${isbn}.json`);
+        if(!res.ok)throw new Error('Not found');
+        const data=await res.json();
+        
+        const title=data.title||'Titre inconnu';
+        const year=data.publish_date?data.publish_date.match(/\d{4}/)?.[0]:'';
+        
+        // Chercher l'éditeur
+        let publisher='';
+        if(data.publishers&&data.publishers.length>0){
+            publisher=data.publishers[0];
+        }
+        
+        // Stocker pour quickAddCustom
+        window.pendingCustomAlbum={isbn,title,year,publisher};
+        
+        resultDiv.innerHTML=`
+            <div class="scanner-result-title">${escapeHTML(title)}</div>
+            <div class="scanner-result-isbn">ISBN: ${escapeHTML(isbn)}</div>
+            ${publisher?`<div style="font-size:.75rem;color:var(--text-secondary);margin-bottom:.5rem">${escapeHTML(publisher)}${year?' ('+year+')':''}</div>`:''}
+            <div class="scanner-result-status unknown">Album trouvé via Open Library</div>
+            <div class="scanner-result-actions">
+                <button class="btn btn-primary" onclick="quickAddCustom()">+ Ajouter à ma collection</button>
+                <button class="btn btn-secondary" onclick="lastScannedCode='';window.pendingCustomAlbum=null;document.getElementById('scanner-result').innerHTML='<div style=\\'color:var(--text-secondary);font-size:.85rem\\'>Pointez la caméra vers le code-barres ISBN</div>'">Scanner un autre</button>
+            </div>
+        `;
+    }catch(e){
+        resultDiv.innerHTML=`
+            <div class="scanner-result-title">Album non trouvé</div>
+            <div class="scanner-result-isbn">ISBN: ${escapeHTML(isbn)}</div>
+            <div class="scanner-result-status unknown">Cet ISBN n'est pas reconnu</div>
+            <div class="scanner-result-actions">
+                <button class="btn btn-secondary" onclick="lastScannedCode=''">Scanner un autre</button>
+            </div>
+        `;
+    }
+}
+
+function quickAdd(albumId){
+    if(!collection[albumId])collection[albumId]={};
+    collection[albumId].owned=true;
+    collection[albumId].condition='good';
+    collection[albumId].addedAt=new Date().toISOString();
+    saveCollection();
+    updateStats();
+    renderAlbums();
+    lookupISBN(lastScannedCode);
+}
+
+function quickAddCustom(){
+    if(!window.pendingCustomAlbum)return;
+    const{isbn,title,year,publisher}=window.pendingCustomAlbum;
+    
+    // Générer un ID unique pour l'album custom
+    const customId=10000+customAlbums.length+1;
+    
+    // Créer l'album custom
+    const newAlbum={
+        id:customId,
+        title:title,
+        year:year?parseInt(year):null,
+        authors:'custom',
+        pages:48,
+        isbn:isbn,
+        baseValue:10,
+        cover:'',
+        type:'custom',
+        synopsis:publisher?`Édition: ${publisher}`:'Album ajouté via scan'
+    };
+    
+    customAlbums.push(newAlbum);
+    localStorage.setItem('asterix-custom',JSON.stringify(customAlbums));
+    
+    // Marquer comme possédé
+    collection[customId]={owned:true,condition:'good',addedAt:new Date().toISOString()};
+    saveCollection();
+    
+    updateStats();
+    renderAlbums();
+    
+    window.pendingCustomAlbum=null;
+    
+    // Afficher confirmation
+    document.getElementById('scanner-result').innerHTML=`
+        <div class="scanner-result-title">${escapeHTML(title)}</div>
+        <div class="scanner-result-isbn">ISBN: ${escapeHTML(isbn)}</div>
+        <div class="scanner-result-status owned">✓ Ajouté à ta collection !</div>
+        <div class="scanner-result-actions">
+            <button class="btn btn-secondary" onclick="closeScannerModal();openModal(${customId})">Voir détails</button>
+            <button class="btn btn-secondary" onclick="lastScannedCode='';document.getElementById('scanner-result').innerHTML='<div style=\\'color:var(--text-secondary);font-size:.85rem\\'>Pointez la caméra vers le code-barres ISBN</div>'">Scanner un autre</button>
+        </div>
+    `;
+}
+
+// Supabase sync (invisible - hérite de la session du hub)
+const SUPABASE_URL='https://ejulkzxohloxfvpbnyyw.supabase.co';
+const SUPABASE_ANON_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImVqdWxrenhvaGxveGZ2cGJueXl3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njg2NDUxNDksImV4cCI6MjA4NDIyMTE0OX0.n98tN_BqJQAZn1MuPRMcINV-qtQomjH2SC5vlzjgCQ0';
+let supabaseClient=null,currentUser=null;
+
+async function initSync(){
+    supabaseClient=window.supabase.createClient(SUPABASE_URL,SUPABASE_ANON_KEY,{
+        auth:{persistSession:true,storageKey:'beau-auth',storage:window.localStorage}
+    });
+    const{data:{session}}=await supabaseClient.auth.getSession();
+    if(session?.user){currentUser=session.user;await loadFromCloud();}
+    supabaseClient.auth.onAuthStateChange(async(event,session)=>{
+        if(event==='SIGNED_IN'&&session?.user){currentUser=session.user;await loadFromCloud();}
+        else if(event==='SIGNED_OUT'){currentUser=null;}
+    });
+}
+
+async function loadFromCloud(){
+    if(!currentUser)return;
+    const{data,error}=await supabaseClient.from('collections').select('data').eq('user_id',currentUser.id).eq('series','asterix').single();
+    
+    // Si rien en cloud : pousser le local (si existant)
+    if(error||!data?.data){
+        await saveToCloud();
+        return;
+    }
+    
+    const cloud=data.data;
+    const cloudAt=cloud.savedAt?new Date(cloud.savedAt).getTime():0;
+    const localDirtyAtStr=localStorage.getItem('asterix-dirtyAt');
+    const localDirtyAt=localDirtyAtStr?new Date(localDirtyAtStr).getTime():0;
+    
+    // Local plus récent => on garde local et on pousse
+    if(localDirtyAt>cloudAt){
+        await saveToCloud();
+        return;
+    }
+    
+    // Cloud plus récent => on applique cloud
+    if(cloud.collection)collection=cloud.collection;
+    if(cloud.wishlist)wishlist=cloud.wishlist;
+    if(cloud.filmsSeen)filmsSeen=cloud.filmsSeen;
+    if(cloud.customAlbums)customAlbums=cloud.customAlbums;
+    if(cloud.customLinks)customLinks=cloud.customLinks;
+    if(cloud.hiddenDefaultLinks)hiddenDefaultLinks=cloud.hiddenDefaultLinks;
+    
+    // Reset dirtyAt sur l'état cloud
+    originalSave('asterix-dirtyAt',cloud.savedAt||new Date().toISOString());
+    
+    updateStats();renderAlbums();renderLinks();
+}
+
+async function saveToCloud(){
+    if(!currentUser)return;
+    const payload={collection,wishlist,filmsSeen,customAlbums,customLinks,hiddenDefaultLinks,savedAt:new Date().toISOString()};
+    try{
+        const{error}=await supabaseClient.from('collections').upsert({user_id:currentUser.id,series:'asterix',data:payload},{onConflict:'user_id,series'});
+        if(error)console.warn('Cloud save error',error);
+    }catch(e){
+        console.warn('Cloud save exception',e);
+    }
+}
+
+// Auto-save on changes with debounce
+let saveTimeout=null;
+const originalSave=localStorage.setItem.bind(localStorage);
+localStorage.setItem=function(key,value){
+    originalSave(key,value);
+    if(key.startsWith('asterix-')&&key!=='asterix-dirtyAt'){
+        originalSave('asterix-dirtyAt',new Date().toISOString());
+        clearTimeout(saveTimeout);
+        saveTimeout=setTimeout(saveToCloud,1000);
+    }
+};
+
+// User cockpit
+function toggleUserDropdown(){document.getElementById('user-dropdown').classList.toggle('active')}
+document.addEventListener('click',e=>{if(!e.target.closest('.user-menu'))document.getElementById('user-dropdown').classList.remove('active')});
+function loadUserCockpit(){
+    const profile=JSON.parse(localStorage.getItem('beau-user-profile')||'null');
+    if(profile){
+        document.getElementById('menu-name').textContent='Cockpit';
+        document.getElementById('dropdown-name').textContent=profile.firstName||'User';
+        document.getElementById('dropdown-alias').textContent=profile.alias||'';
+        // Apply showPrices preference
+        if(profile.showPrices===false){
+            document.body.classList.add('hide-prices');
+        }else{
+            document.body.classList.remove('hide-prices');
+        }
+    }
+}
+function signOutAndRedirect(){
+    if(supabaseClient){
+        supabaseClient.auth.signOut().then(()=>{
+            localStorage.removeItem('beau-user-profile');
+            localStorage.removeItem('beau-user-email');
+            window.location.href='index.html';
+        });
+    }else{
+        localStorage.removeItem('beau-user-profile');
+        localStorage.removeItem('beau-user-email');
+        window.location.href='index.html';
+    }
+}
+loadUserCockpit();
+
+renderNews();renderLinks();updateStats();renderAlbums();initSync();
+    </script>
+</body>
+</html>

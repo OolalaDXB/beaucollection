@@ -1,0 +1,329 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BEAU Collections</title>
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;500;600&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <style>
+        :root{--bg-deep:#050d0a;--bg-card:#0a1915;--bg-hover:#142623;--bg-input:#1A2E29;--text-primary:#E8E8E8;--text-secondary:#A8B5B0;--accent-copper:#C4785A;--accent-gold:#C4A55A;--border:#142e26;--positive:#5B8C6A;--negative:#C45C4A}
+        [data-theme="light"]{--bg-deep:#F5F2EB;--bg-card:#FFFFFF;--bg-hover:#E8E5DE;--bg-input:#F0EDE6;--text-primary:#1A2E29;--text-secondary:#5A6B66;--border:#D4D0C8}
+        *{margin:0;padding:0;box-sizing:border-box}
+        body{font-family:'Inter',sans-serif;background:var(--bg-deep);color:var(--text-primary);min-height:100vh;line-height:1.6;transition:background .3s,color .3s}
+        .header{background:var(--bg-card);border-bottom:1px solid var(--border);padding:1rem 2rem;position:sticky;top:0;z-index:100}
+        .header-content{max-width:1200px;margin:0 auto;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:1rem}
+        .logo{cursor:pointer}
+        .logo-text{font-family:'Playfair Display',serif;font-size:1.5rem;font-weight:500;letter-spacing:.1em}
+        .logo-sub{font-size:.7rem;color:var(--text-secondary);letter-spacing:.15em;text-transform:uppercase}
+        .header-actions{display:flex;align-items:center;gap:.75rem}
+        .theme-toggle{background:var(--bg-input);border:1px solid var(--border);border-radius:20px;padding:.35rem;cursor:pointer;display:flex;gap:.25rem}
+        .theme-icon{width:24px;height:24px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:.75rem;transition:all .3s}
+        .theme-icon.active{background:var(--accent-copper)}
+        .header-btn{background:var(--bg-input);border:1px solid var(--border);color:var(--text-primary);padding:.5rem 1rem;border-radius:6px;cursor:pointer;font-size:.8rem;transition:all .2s;font-family:'Inter',sans-serif}
+        .header-btn:hover{background:var(--bg-hover);border-color:var(--accent-copper)}
+        .user-menu{position:relative}
+        .user-menu-btn{display:flex;align-items:center;gap:.5rem;background:var(--bg-input);border:1px solid var(--border);padding:.4rem .75rem .4rem .4rem;border-radius:24px;cursor:pointer;transition:all .2s}
+        .user-menu-btn:hover{border-color:var(--accent-copper)}
+        .user-menu-avatar{width:28px;height:28px;background:var(--accent-copper);border-radius:50%;display:flex;align-items:center;justify-content:center;font-family:'Playfair Display',serif;font-size:.8rem;color:white}
+        .user-menu-name{font-size:.8rem;max-width:100px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+        .cockpit-icon{color:var(--text-secondary)}
+        .user-dropdown{position:absolute;top:calc(100% + 8px);right:0;background:var(--bg-card);border:1px solid var(--border);border-radius:8px;min-width:200px;box-shadow:0 8px 32px rgba(0,0,0,.3);display:none;overflow:hidden}
+        .user-dropdown.active{display:block}
+        .dropdown-header{padding:1rem;border-bottom:1px solid var(--border);text-align:center}
+        .dropdown-name{font-weight:500;margin-bottom:.15rem}
+        .dropdown-alias{font-size:.75rem;color:var(--text-secondary)}
+        .dropdown-item{padding:.75rem 1rem;display:flex;align-items:center;gap:.75rem;cursor:pointer;font-size:.85rem;transition:background .2s}
+        .dropdown-item:hover{background:var(--bg-hover)}
+        .dropdown-item svg{width:16px;height:16px;stroke:var(--accent-copper);opacity:.85}
+        .dropdown-divider{height:1px;background:var(--border);margin:.25rem 0}
+        .dropdown-item.danger{color:var(--negative)}
+        .dropdown-item.danger svg{stroke:var(--negative)}
+        .main{max-width:1200px;margin:0 auto;padding:3rem 2rem}
+        .welcome{margin-bottom:3rem;text-align:center}
+        .welcome-title{font-family:'Playfair Display',serif;font-size:2.5rem;font-weight:500;margin-bottom:.75rem}
+        .welcome-sub{color:var(--text-secondary);font-size:1rem;max-width:500px;margin:0 auto}
+        .section-label{font-size:.7rem;color:var(--text-secondary);text-transform:uppercase;letter-spacing:.15em;margin-bottom:1rem}
+        .collections-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(320px,1fr));gap:1.5rem;margin-bottom:3rem}
+        .collection-card{background:var(--bg-card);border:1px solid var(--border);border-radius:12px;overflow:hidden;cursor:pointer;transition:all .3s ease;position:relative}
+        .collection-card:hover{transform:translateY(-4px);border-color:var(--accent-copper);box-shadow:0 8px 32px rgba(196,120,90,.15)}
+        .collection-card.locked{opacity:.7;cursor:pointer}
+        .collection-card.locked:hover{transform:translateY(-4px);border-color:var(--accent-copper);box-shadow:0 8px 32px rgba(196,120,90,.15)}
+        .collection-card.coming-soon{opacity:.5;cursor:default}
+        .collection-card.coming-soon:hover{transform:none;border-color:var(--border);box-shadow:none}
+        .card-visual{height:160px;background:linear-gradient(135deg,var(--bg-hover),var(--bg-deep));display:flex;align-items:center;justify-content:center;position:relative;overflow:hidden}
+        .card-visual::before{content:'';position:absolute;inset:0;background:radial-gradient(circle at 30% 70%,rgba(196,120,90,.1),transparent 50%)}
+        .card-initial{font-family:'Playfair Display',serif;font-size:3rem;color:var(--accent-copper);opacity:.3}
+        .card-image{max-width:90%;max-height:120px;object-fit:contain;filter:drop-shadow(0 4px 12px rgba(0,0,0,.3))}
+        .card-body{padding:1.25rem}
+        .card-title{font-family:'Playfair Display',serif;font-size:1.25rem;font-weight:500;margin-bottom:.35rem}
+        .card-desc{font-size:.8rem;color:var(--text-secondary);margin-bottom:1rem;line-height:1.5}
+        .card-stats{display:flex;gap:2rem}
+        .card-stat-value{font-family:'Playfair Display',serif;font-size:1.5rem;color:var(--accent-copper)}
+        .card-stat-label{font-size:.65rem;color:var(--text-secondary);text-transform:uppercase;letter-spacing:.05em}
+        .card-badge{position:absolute;top:1rem;right:1rem;font-size:.65rem;color:var(--text-secondary);text-transform:uppercase;letter-spacing:.1em}
+        .card-lock{position:absolute;top:1rem;right:1rem;font-size:1rem;opacity:.7}
+        .modal-overlay{display:none;position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(5,13,10,.95);z-index:1000;justify-content:center;align-items:center;padding:1rem}
+        [data-theme="light"] .modal-overlay{background:rgba(245,242,235,.95)}
+        .modal-overlay.active{display:flex}
+        .modal{background:var(--bg-card);border:1px solid var(--border);border-radius:12px;max-width:480px;width:100%;padding:2rem;position:relative;max-height:90vh;overflow-y:auto}
+        .modal-header{text-align:center;margin-bottom:1.5rem}
+        .modal-title{font-family:'Playfair Display',serif;font-size:1.5rem;margin-bottom:.5rem}
+        .modal-subtitle{color:var(--text-secondary);font-size:.85rem}
+        .modal-close{position:absolute;top:1rem;right:1rem;background:none;border:none;color:var(--text-secondary);font-size:1.5rem;cursor:pointer;line-height:1;width:32px;height:32px}
+        .modal-close:hover{color:var(--text-primary)}
+        .form-group{margin-bottom:1rem}
+        .form-label{display:block;font-size:.75rem;color:var(--text-secondary);margin-bottom:.4rem;text-transform:uppercase;letter-spacing:.05em}
+        .form-input{width:100%;padding:.75rem 1rem;background:var(--bg-input);border:1px solid var(--border);border-radius:6px;color:var(--text-primary);font-size:.9rem;font-family:'Inter',sans-serif}
+        .form-input:focus{outline:none;border-color:var(--accent-copper)}
+        .form-input::placeholder{color:var(--text-secondary)}
+        .form-select{width:100%;padding:.75rem 1rem;background:var(--bg-input);border:1px solid var(--border);border-radius:6px;color:var(--text-primary);font-size:.9rem;font-family:'Inter',sans-serif;cursor:pointer}
+        .form-select:focus{outline:none;border-color:var(--accent-copper)}
+        .form-row{display:grid;grid-template-columns:1fr 1fr;gap:1rem}
+        .btn{width:100%;padding:.75rem 1rem;border:1px solid var(--border);border-radius:6px;font-size:.85rem;font-family:'Inter',sans-serif;cursor:pointer;transition:all .2s;margin-bottom:.75rem}
+        .btn-primary{background:var(--accent-copper);border-color:var(--accent-copper);color:white}
+        .btn-primary:hover{background:#b56a4d}
+        .btn-primary:disabled{opacity:.5;cursor:not-allowed}
+        .btn-secondary{background:var(--bg-input);color:var(--text-primary)}
+        .btn-secondary:hover{background:var(--bg-hover);border-color:var(--accent-copper)}
+        .btn-google{background:white;border-color:#ddd;color:#333;display:flex;align-items:center;justify-content:center;gap:.5rem}
+        .btn-google:hover{background:#f5f5f5;border-color:#ccc}
+        .btn-link{background:none;border:none;color:var(--accent-copper);font-size:.8rem;cursor:pointer;text-decoration:underline;padding:0;margin:0;width:auto}
+        .btn-link:hover{color:var(--accent-gold)}
+        .divider{display:flex;align-items:center;gap:1rem;margin:1.25rem 0;color:var(--text-secondary);font-size:.75rem}
+        .divider::before,.divider::after{content:'';flex:1;height:1px;background:var(--border)}
+        .message{padding:.75rem;border-radius:6px;margin-bottom:1rem;font-size:.8rem;text-align:center}
+        .message.success{background:rgba(91,140,106,.15);color:var(--positive);border:1px solid rgba(91,140,106,.3)}
+        .message.error{background:rgba(196,92,74,.15);color:var(--negative);border:1px solid rgba(196,92,74,.3)}
+        .form-footer{text-align:center;margin-top:1rem;font-size:.8rem;color:var(--text-secondary)}
+        .tabs{display:flex;gap:0;margin-bottom:1.5rem;border-bottom:1px solid var(--border)}
+        .tab{flex:1;padding:.75rem;text-align:center;cursor:pointer;font-size:.85rem;color:var(--text-secondary);border-bottom:2px solid transparent;transition:all .2s}
+        .tab:hover{color:var(--text-primary)}
+        .tab.active{color:var(--accent-copper);border-bottom-color:var(--accent-copper)}
+        .profile-section{margin-bottom:2rem}
+        .profile-section-title{font-size:.7rem;color:var(--text-secondary);text-transform:uppercase;letter-spacing:.1em;margin-bottom:1rem;padding-bottom:.5rem;border-bottom:1px solid var(--border)}
+        .collection-toggles{display:flex;flex-direction:column;gap:.5rem}
+        .collection-toggle{display:flex;align-items:center;justify-content:space-between;padding:.75rem;background:var(--bg-input);border-radius:6px}
+        .collection-toggle-name{font-size:.9rem}
+        .toggle-switch{position:relative;width:40px;height:22px;background:var(--border);border-radius:11px;cursor:pointer;transition:background .2s}
+        .toggle-switch.active{background:var(--positive)}
+        .toggle-switch::after{content:'';position:absolute;top:2px;left:2px;width:18px;height:18px;background:white;border-radius:50%;transition:transform .2s}
+        .toggle-switch.active::after{transform:translateX(18px)}
+        .footer{padding:2rem;text-align:center;color:var(--text-secondary);font-size:.75rem;border-top:1px solid var(--border)}
+        .footer a{color:var(--accent-copper);text-decoration:none}
+        .footer a:hover{text-decoration:underline}
+        @media(max-width:768px){.header-content{flex-direction:column;gap:.75rem}.welcome-title{font-size:1.75rem}.main{padding:2rem 1rem}.collections-grid{grid-template-columns:1fr}.form-row{grid-template-columns:1fr}.user-dropdown{right:-50%;min-width:250px}}
+    </style>
+</head>
+<body data-theme="dark">
+    <header class="header">
+        <div class="header-content">
+            <div class="logo" onclick="window.location.href='index.html'"><div class="logo-text">BEAU</div><div class="logo-sub">Collections</div></div>
+            <div class="header-actions">
+                <div class="theme-toggle" onclick="toggleTheme()"><div class="theme-icon active" id="icon-dark">☽</div><div class="theme-icon" id="icon-light">☀</div></div>
+                <button class="header-btn" id="auth-btn" onclick="openAuthModal()">Sign in</button>
+                <div class="user-menu" id="user-menu" style="display:none;">
+                    <div class="user-menu-btn" onclick="toggleUserDropdown()">
+                        <svg class="cockpit-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 4-6 8-6s8 2 8 6"/></svg>
+                        <span class="user-menu-name" id="menu-name">Cockpit</span>
+                        <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg>
+                    </div>
+                    <div class="user-dropdown" id="user-dropdown">
+                        <div class="dropdown-header">
+                            <div class="dropdown-name" id="dropdown-name">User</div>
+                            <div class="dropdown-alias" id="dropdown-alias">@user</div>
+                        </div>
+                        <div class="dropdown-item" onclick="openProfileModal()">
+                            <svg viewBox="0 0 24 24" fill="none" stroke-width="1.5"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+                            Settings
+                        </div>
+                        <div class="dropdown-divider"></div>
+                        <div class="dropdown-item danger" onclick="signOut()">
+                            <svg viewBox="0 0 24 24" fill="none" stroke-width="1.5"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+                            Sign out
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </header>
+    <main class="main">
+        <div class="welcome"><h1 class="welcome-title" id="welcome-title">Your Collections</h1><p class="welcome-sub" id="welcome-sub">Sign in to access and sync your collections across devices</p></div>
+        <div class="section-label">Available Collections</div>
+        <div class="collections-grid" id="collections-grid"></div>
+    </main>
+    <footer class="footer">BEAU Collections — A <a href="https://beau.capital" target="_blank" rel="noopener noreferrer">BEAU</a> experience</footer>
+    <div class="modal-overlay" id="auth-modal" onclick="if(event.target===this)closeAuthModal()">
+        <div class="modal">
+            <button class="modal-close" onclick="closeAuthModal()">×</button>
+            <div id="auth-tabs">
+                <div class="tabs"><div class="tab active" id="tab-signin" onclick="showTab('signin')">Sign in</div><div class="tab" id="tab-signup" onclick="showTab('signup')">Create account</div></div>
+                <div id="auth-message"></div>
+                <div id="form-signin">
+                    <div class="form-group"><input type="email" class="form-input" id="signin-email" placeholder="Email address"></div>
+                    <div class="form-group"><input type="password" class="form-input" id="signin-password" placeholder="Password"></div>
+                    <button class="btn btn-primary" onclick="signInWithPassword()">Sign in</button>
+                    <div class="form-footer"><button class="btn-link" onclick="showTab('reset')">Forgot password?</button></div>
+                    <div class="divider">or</div>
+                    <button class="btn btn-google" onclick="signInWithGoogle()"><svg width="18" height="18" viewBox="0 0 24 24"><path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/><path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/><path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/><path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/></svg>Continue with Google</button>
+                </div>
+                <div id="form-signup" style="display:none;">
+                    <div class="form-row"><div class="form-group"><label class="form-label">First Name</label><input type="text" class="form-input" id="signup-firstname" placeholder="John"></div><div class="form-group"><label class="form-label">Alias</label><input type="text" class="form-input" id="signup-alias" placeholder="@johnny"></div></div>
+                    <div class="form-group"><label class="form-label">Email</label><input type="email" class="form-input" id="signup-email" placeholder="john@example.com"></div>
+                    <div class="form-group"><label class="form-label">Password</label><input type="password" class="form-input" id="signup-password" placeholder="Min 6 characters"></div>
+                    <div class="form-group"><label class="form-label">Preferred Language</label><select class="form-select" id="signup-language"><option value="en">English</option><option value="fr">Français</option><option value="ru">Русский</option></select></div>
+                    <button class="btn btn-primary" onclick="signUp()">Create account</button>
+                    <div class="divider">or</div>
+                    <button class="btn btn-google" onclick="signInWithGoogle()"><svg width="18" height="18" viewBox="0 0 24 24"><path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/><path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/><path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/><path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/></svg>Continue with Google</button>
+                </div>
+                <div id="form-reset" style="display:none;">
+                    <div class="modal-header" style="margin-bottom:1rem;"><div class="modal-subtitle">Enter your email to receive a password reset link</div></div>
+                    <div class="form-group"><input type="email" class="form-input" id="reset-email" placeholder="Email address"></div>
+                    <button class="btn btn-primary" onclick="resetPassword()">Send reset link</button>
+                    <div class="form-footer"><button class="btn-link" onclick="showTab('signin')">Back to sign in</button></div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="modal-overlay" id="profile-modal" onclick="if(event.target===this)closeProfileModal()">
+        <div class="modal">
+            <button class="modal-close" onclick="closeProfileModal()">×</button>
+            <div class="modal-header"><div class="modal-title">Profile Settings</div></div>
+            <div id="profile-message"></div>
+            <div class="profile-section">
+                <div class="profile-section-title">Personal Information</div>
+                <div class="form-row"><div class="form-group"><label class="form-label">First Name</label><input type="text" class="form-input" id="profile-firstname"></div><div class="form-group"><label class="form-label">Alias</label><input type="text" class="form-input" id="profile-alias"></div></div>
+                <div class="form-group"><label class="form-label">Preferred Language</label><select class="form-select" id="profile-language"><option value="en">English</option><option value="fr">Français</option><option value="ru">Русский</option></select></div>
+            </div>
+            <div class="profile-section">
+                <div class="profile-section-title">Display Preferences</div>
+                <div class="collection-toggle"><span class="collection-toggle-name">Show prices & values</span><div class="toggle-switch" id="toggle-show-prices" onclick="this.classList.toggle('active')"></div></div>
+            </div>
+            <div class="profile-section"><div class="profile-section-title">Active Collections</div><div class="collection-toggles" id="collection-toggles"></div></div>
+            <button class="btn btn-primary" onclick="saveProfile()">Save Changes</button>
+        </div>
+    </div>
+    <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
+    <script>
+var SUPABASE_URL='https://ejulkzxohloxfvpbnyyw.supabase.co',SUPABASE_ANON_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImVqdWxrenhvaGxveGZ2cGJueXl3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njg2NDUxNDksImV4cCI6MjA4NDIyMTE0OX0.n98tN_BqJQAZn1MuPRMcINV-qtQomjH2SC5vlzjgCQ0';
+var COLLECTIONS=[{id:'asterix',name:'Astérix',desc:'The iconic Franco-Belgian comic series.',url:'asterix.html',initial:'A',image:'asterix.png'},{id:'mortelle-adele',name:'Mortelle Adèle',desc:'The most mischievous girl in French comics.',url:'mortelle-adele.html',initial:'M',image:'adele.png'},{id:'tomtom-nana',name:'Tom-Tom et Nana',desc:'Les enfants terribles de La Bonne Fourchette.',url:'tomtom-nana.html',initial:'T',image:'tomtom.png'},{id:'coming',name:'Coming Soon',desc:'More collections soon. Vinyl, watches, art...',url:'#',initial:'+',comingSoon:true}];
+var supabaseClient=null,currentUser=null,userProfile=null,collectionsStats={},currentTheme=localStorage.getItem('beau-theme')||'dark';
+
+function initTheme(){document.body.setAttribute('data-theme',currentTheme);document.getElementById('icon-dark').classList.toggle('active',currentTheme==='dark');document.getElementById('icon-light').classList.toggle('active',currentTheme==='light')}
+function toggleTheme(){currentTheme=currentTheme==='dark'?'light':'dark';localStorage.setItem('beau-theme',currentTheme);initTheme()}
+function openAuthModal(){document.getElementById('auth-modal').classList.add('active');document.getElementById('auth-message').innerHTML='';showTab('signin')}
+function closeAuthModal(){document.getElementById('auth-modal').classList.remove('active')}
+function openProfileModal(){closeUserDropdown();document.getElementById('profile-modal').classList.add('active');loadProfileForm()}
+function closeProfileModal(){document.getElementById('profile-modal').classList.remove('active')}
+function showTab(t){document.getElementById('auth-message').innerHTML='';document.getElementById('tab-signin').classList.remove('active');document.getElementById('tab-signup').classList.remove('active');document.getElementById('form-signin').style.display='none';document.getElementById('form-signup').style.display='none';document.getElementById('form-reset').style.display='none';if(t==='signin'){document.getElementById('tab-signin').classList.add('active');document.getElementById('form-signin').style.display='block';document.querySelector('.tabs').style.display='flex'}else if(t==='signup'){document.getElementById('tab-signup').classList.add('active');document.getElementById('form-signup').style.display='block';document.querySelector('.tabs').style.display='flex'}else if(t==='reset'){document.getElementById('form-reset').style.display='block';document.querySelector('.tabs').style.display='none'}}
+function toggleUserDropdown(){document.getElementById('user-dropdown').classList.toggle('active')}
+function closeUserDropdown(){document.getElementById('user-dropdown').classList.remove('active')}
+document.addEventListener('click',function(e){if(!e.target.closest('.user-menu'))closeUserDropdown()});
+
+function initSupabase(){
+    if(typeof window.supabase==='undefined'){renderCollections();return}
+    supabaseClient=window.supabase.createClient(SUPABASE_URL,SUPABASE_ANON_KEY,{
+        auth:{
+            persistSession:true,
+            storageKey:'beau-auth',
+            storage:window.localStorage
+        }
+    });
+    supabaseClient.auth.getSession().then(function(r){
+        console.log('Session check:',r.data?.session?'found':'none');
+        if(r.data&&r.data.session&&r.data.session.user){
+            setUser(r.data.session.user);
+        }else{
+            renderCollections();
+        }
+    });
+    supabaseClient.auth.onAuthStateChange(function(e,s){
+        console.log('Auth state change:',e);
+        if(e==='SIGNED_IN'&&s&&s.user){setUser(s.user);closeAuthModal()}
+        else if(e==='SIGNED_OUT'){currentUser=null;userProfile=null;updateUIForLogout();renderCollections()}
+    });
+}
+
+function updateUIForLogout(){
+    localStorage.removeItem('beau-user-profile');
+    localStorage.removeItem('beau-user-email');
+    document.getElementById('auth-btn').style.display='block';
+    document.getElementById('user-menu').style.display='none';
+    document.getElementById('welcome-title').textContent='Your Collections';
+    document.getElementById('welcome-sub').textContent='Sign in to access and sync your collections across devices';
+    collectionsStats={};
+}
+
+function setUser(u){
+    currentUser=u;
+    if(u){
+        userProfile={
+            firstName:u.user_metadata?.first_name||u.user_metadata?.full_name?.split(' ')[0]||u.email.split('@')[0],
+            alias:u.user_metadata?.alias||'@'+u.email.split('@')[0],
+            language:u.user_metadata?.language||'en',
+            activeCollections:u.user_metadata?.active_collections||['asterix','mortelle-adele'],
+            showPrices:u.user_metadata?.show_prices!==false
+        };
+        localStorage.setItem('beau-user-profile',JSON.stringify(userProfile));
+        localStorage.setItem('beau-user-email',u.email);
+        document.getElementById('auth-btn').style.display='none';
+        document.getElementById('user-menu').style.display='block';
+        document.getElementById('menu-name').textContent='Cockpit';
+        document.getElementById('dropdown-name').textContent=userProfile.firstName;
+        document.getElementById('dropdown-alias').textContent=userProfile.alias;
+        document.getElementById('welcome-title').textContent='Welcome, '+userProfile.firstName;
+        document.getElementById('welcome-sub').textContent='Select a collection to continue';
+        loadStats();
+    }
+    renderCollections();
+}
+
+function signInWithPassword(){var e=document.getElementById('signin-email').value.trim(),p=document.getElementById('signin-password').value;if(!e||!p){showMessage('Please enter email and password','error','auth');return}supabaseClient.auth.signInWithPassword({email:e,password:p}).then(function(r){if(r.error)showMessage(r.error.message,'error','auth')})}
+function signUp(){var f=document.getElementById('signup-firstname').value.trim(),a=document.getElementById('signup-alias').value.trim(),e=document.getElementById('signup-email').value.trim(),p=document.getElementById('signup-password').value,l=document.getElementById('signup-language').value;if(!e||!p){showMessage('Please enter email and password','error','auth');return}if(p.length<6){showMessage('Password must be at least 6 characters','error','auth');return}if(a&&!a.startsWith('@'))a='@'+a;supabaseClient.auth.signUp({email:e,password:p,options:{emailRedirectTo:window.location.origin+window.location.pathname,data:{first_name:f||e.split('@')[0],alias:a||'@'+e.split('@')[0],language:l,active_collections:['asterix','mortelle-adele']}}}).then(function(r){if(r.error)showMessage(r.error.message,'error','auth');else showMessage('Account created! Check your email.','success','auth')})}
+function resetPassword(){var e=document.getElementById('reset-email').value.trim();if(!e){showMessage('Please enter your email','error','auth');return}supabaseClient.auth.resetPasswordForEmail(e,{redirectTo:window.location.origin+window.location.pathname}).then(function(r){if(r.error)showMessage(r.error.message,'error','auth');else showMessage('Reset link sent!','success','auth')})}
+function signInWithGoogle(){supabaseClient.auth.signInWithOAuth({provider:'google',options:{redirectTo:window.location.origin+window.location.pathname}}).then(function(r){if(r.error)showMessage(r.error.message,'error','auth')})}
+function signOut(){supabaseClient.auth.signOut().then(function(){closeUserDropdown()})}
+function showMessage(m,t,g){var el=document.getElementById(g+'-message');if(el)el.innerHTML='<div class="message '+t+'">'+m+'</div>'}
+function loadProfileForm(){if(!userProfile)return;document.getElementById('profile-firstname').value=userProfile.firstName||'';document.getElementById('profile-alias').value=userProfile.alias||'';document.getElementById('profile-language').value=userProfile.language||'en';document.getElementById('toggle-show-prices').classList.toggle('active',userProfile.showPrices!==false);var h='';COLLECTIONS.forEach(function(c){if(c.comingSoon)return;var a=userProfile.activeCollections&&userProfile.activeCollections.indexOf(c.id)>-1;h+='<div class="collection-toggle"><span class="collection-toggle-name">'+c.name+'</span><div class="toggle-switch'+(a?' active':'')+'" data-collection="'+c.id+'" onclick="toggleCollection(this)"></div></div>'});document.getElementById('collection-toggles').innerHTML=h}
+function toggleCollection(el){el.classList.toggle('active')}
+function saveProfile(){var f=document.getElementById('profile-firstname').value.trim(),a=document.getElementById('profile-alias').value.trim(),l=document.getElementById('profile-language').value,sp=document.getElementById('toggle-show-prices').classList.contains('active');if(a&&!a.startsWith('@'))a='@'+a;var ac=[];document.querySelectorAll('#collection-toggles .toggle-switch.active').forEach(function(el){ac.push(el.dataset.collection)});supabaseClient.auth.updateUser({data:{first_name:f,alias:a,language:l,active_collections:ac,show_prices:sp}}).then(function(r){if(r.error)showMessage(r.error.message,'error','profile');else{userProfile.firstName=f;userProfile.alias=a;userProfile.language=l;userProfile.activeCollections=ac;userProfile.showPrices=sp;localStorage.setItem('beau-user-profile',JSON.stringify(userProfile));document.getElementById('menu-name').textContent='Cockpit';document.getElementById('dropdown-name').textContent=f;document.getElementById('dropdown-alias').textContent=a;document.getElementById('welcome-title').textContent='Welcome, '+f;showMessage('Profile saved!','success','profile');renderCollections();setTimeout(closeProfileModal,1000)}})}function loadStats(){if(!currentUser||!supabaseClient)return;supabaseClient.from('collections').select('series,data').eq('user_id',currentUser.id).then(function(r){collectionsStats={};if(r.data)r.data.forEach(function(row){if(row.data&&row.data.collection){var o=Object.values(row.data.collection).filter(function(x){return x.owned}).length;collectionsStats[row.series]={owned:o}}});renderCollections()})}
+
+function renderCollections(){
+    var g=document.getElementById('collections-grid'),h='';
+    COLLECTIONS.forEach(function(c){
+        // Hide collections not in user's active list (only if logged in)
+        if(currentUser && userProfile && userProfile.activeCollections && userProfile.activeCollections.indexOf(c.id)===-1 && !c.comingSoon) return;
+        
+        var s=collectionsStats[c.id];
+        var sh='';
+        var isLocked = !currentUser && !c.comingSoon;
+        var cc='collection-card';
+        
+        if(c.comingSoon) cc+=' coming-soon';
+        else if(isLocked) cc+=' locked';
+        
+        // Stats display
+        if(s) sh='<div class="card-stats"><div><div class="card-stat-value">'+s.owned+'</div><div class="card-stat-label">Owned</div></div></div>';
+        else if(currentUser && !c.comingSoon) sh='<div class="card-stats"><div><div class="card-stat-value">—</div><div class="card-stat-label">Not synced</div></div></div>';
+        else if(!c.comingSoon) sh='<div class="card-stats"><div><div class="card-stat-value">—</div><div class="card-stat-label">Sign in to sync</div></div></div>';
+        
+        // Click handler
+        var cl='';
+        if(c.comingSoon) cl='';
+        else if(isLocked) cl=' onclick="openAuthModal()"';
+        else cl=' onclick="window.location.href=\''+c.url+'\'"';
+        
+        var badge = c.comingSoon ? '<div class="card-badge">Soon</div>' : '';
+        var lock = isLocked ? '<div class="card-lock">🔒</div>' : '';
+        var visual = c.image ? '<img src="'+c.image+'" alt="'+c.name+'" class="card-image">' : '<div class="card-initial">'+c.initial+'</div>';
+        
+        h+='<div class="'+cc+'"'+cl+'><div class="card-visual">'+visual+badge+lock+'</div><div class="card-body"><div class="card-title">'+c.name+'</div><div class="card-desc">'+c.desc+'</div>'+sh+'</div></div>';
+    });
+    g.innerHTML=h;
+}
+
+initTheme();
+renderCollections(); // Render immediately
+window.addEventListener('load',initSupabase);
+    </script>
+</body>
+</html>

@@ -1,0 +1,1268 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ma Collection Mortelle Adèle | BEAU Collections</title>
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;500;600&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.1/jspdf.plugin.autotable.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/quagga/0.12.1/quagga.min.js"></script>
+    <style>
+        :root{--bg-deep:#1a0a1a;--bg-card:#2a1a2a;--bg-hover:#3a2a3a;--bg-input:#3a2a3a;--text-primary:#E8E8E8;--text-secondary:#C0A8C0;--accent-pink:#E84C8A;--accent-purple:#9B4DCA;--border:#4a3a4a;--positive:#5B8C6A;--negative:#E84C8A}
+        [data-theme="light"]{--bg-deep:#FFF5F8;--bg-card:#FFFFFF;--bg-hover:#FFE8EE;--bg-input:#FFF0F5;--text-primary:#2a1a2a;--text-secondary:#6a5a6a;--border:#E8D0E0}
+        *{margin:0;padding:0;box-sizing:border-box}
+        body{font-family:'Inter',sans-serif;background:var(--bg-deep);color:var(--text-primary);min-height:100vh;line-height:1.6;transition:background .3s,color .3s}
+        body.hide-prices .price-item,body.hide-prices .price-field{display:none!important}
+        .header{background:var(--bg-card);border-bottom:1px solid var(--border);padding:1rem 2rem;position:sticky;top:0;z-index:100}
+        .header-content{max-width:1600px;margin:0 auto;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:1rem}
+        .logo{cursor:pointer}
+        .logo-text{font-family:'Playfair Display',serif;font-size:1.5rem;font-weight:500;letter-spacing:.1em;color:var(--accent-pink)}
+        .logo-sub{font-size:.7rem;color:var(--text-secondary);letter-spacing:.15em;text-transform:uppercase}
+        .nav-links{display:flex;align-items:center;gap:.5rem;margin-left:1rem;padding-left:1rem;border-left:1px solid var(--border)}
+        .nav-link{padding:.4rem .6rem;background:var(--bg-input);border:1px solid var(--border);border-radius:5px;color:var(--text-secondary);font-size:.7rem;text-decoration:none;transition:all .2s;display:flex;align-items:center;gap:.3rem}
+        .nav-link:hover{background:var(--bg-hover);color:var(--text-primary);border-color:var(--accent-pink)}
+        .nav-link.active{background:var(--accent-pink);border-color:var(--accent-pink);color:white}
+        .user-menu{position:relative;margin-left:.5rem}
+        .user-menu-btn{display:flex;align-items:center;gap:.4rem;background:var(--bg-input);border:1px solid var(--border);padding:.35rem .6rem .35rem .35rem;border-radius:20px;cursor:pointer;transition:all .2s;font-size:.75rem}
+        .user-menu-btn:hover{border-color:var(--accent-pink)}
+        .user-menu-avatar{width:24px;height:24px;background:var(--accent-pink);border-radius:50%;display:flex;align-items:center;justify-content:center;font-family:'Playfair Display',serif;font-size:.7rem;color:white}
+        .user-dropdown{position:absolute;top:calc(100% + 6px);right:0;background:var(--bg-card);border:1px solid var(--border);border-radius:6px;min-width:160px;box-shadow:0 8px 24px rgba(0,0,0,.3);display:none;overflow:hidden;z-index:200}
+        .user-dropdown.active{display:block}
+        .user-dropdown-header{padding:.75rem;border-bottom:1px solid var(--border);text-align:center}
+        .user-dropdown-name{font-weight:500;font-size:.85rem}
+        .user-dropdown-alias{font-size:.7rem;color:var(--text-secondary)}
+        .user-dropdown-item{padding:.6rem .75rem;font-size:.75rem;cursor:pointer;transition:background .2s;display:flex;align-items:center;gap:.5rem;color:var(--text-primary);text-decoration:none}
+        .user-dropdown-item:hover{background:var(--bg-hover)}
+        .user-dropdown-item svg{width:16px;height:16px;stroke:var(--accent-pink);opacity:.85;margin-right:.5rem}
+        .user-dropdown-item.danger{color:var(--negative)}
+        .user-dropdown-item.danger svg{stroke:var(--negative)}
+        .user-dropdown-divider{height:1px;background:var(--border);margin:.5rem 0}
+        .cockpit-icon{color:var(--text-secondary)}
+        .header-actions{display:flex;align-items:center;gap:.75rem;flex-wrap:wrap}
+        .theme-toggle{background:var(--bg-input);border:1px solid var(--border);border-radius:20px;padding:.35rem;cursor:pointer;display:flex;gap:.25rem}
+        .theme-icon{width:24px;height:24px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:.75rem;transition:all .3s}
+        .theme-icon.active{background:var(--accent-pink)}
+        .header-btn{background:var(--bg-input);border:1px solid var(--border);color:var(--text-primary);padding:.5rem .75rem;border-radius:6px;cursor:pointer;font-size:.8rem;display:flex;align-items:center;gap:.35rem;transition:all .2s}
+        .header-btn:hover{background:var(--bg-hover)}
+        .header-btn.primary{background:var(--accent-pink);border-color:var(--accent-pink);color:white}
+        .header-btn.wishlist{background:var(--accent-purple);border-color:var(--accent-purple);color:white}
+        .dropdown{position:relative;display:inline-block}
+        .dropdown-content{display:none;position:absolute;right:0;top:100%;background:var(--bg-card);border:1px solid var(--border);border-radius:6px;min-width:120px;z-index:200;margin-top:.25rem}
+        .dropdown:hover .dropdown-content{display:block}
+        .dropdown-item{display:block;padding:.5rem .75rem;font-size:.75rem;cursor:pointer;color:var(--text-primary);border:none;background:none;width:100%;text-align:left}
+        .dropdown-item:hover{background:var(--bg-hover)}
+        .stats-bar{padding:1rem 2rem;background:var(--bg-card);border-bottom:1px solid var(--border)}
+        .stats-bar-inner{max-width:1600px;margin:0 auto;display:flex;gap:1.5rem;flex-wrap:wrap;align-items:center}
+        .stat-item{text-align:center}
+        .stat-value{font-family:'Playfair Display',serif;font-size:1.75rem;font-weight:500;color:var(--accent-pink)}
+        .stat-label{font-size:.65rem;color:var(--text-secondary);text-transform:uppercase;letter-spacing:.05em}
+        .progress-container{flex:1;min-width:200px}
+        .progress-bar{flex:1;height:8px;background:var(--bg-input);border-radius:4px;overflow:hidden}
+        .progress-fill{height:100%;background:linear-gradient(90deg,var(--accent-pink),var(--accent-purple));border-radius:4px;transition:width .5s ease}
+        .progress-text{font-size:.875rem;color:var(--text-secondary);min-width:50px;text-align:right}
+        .filters{padding:.75rem 2rem;background:var(--bg-deep);border-bottom:1px solid var(--border)}
+        .filters-inner{max-width:1600px;margin:0 auto;display:flex;gap:.4rem;flex-wrap:wrap;align-items:center}
+        .filter-group{display:flex;gap:.5rem;align-items:center;flex-wrap:wrap}
+        .filter-check{display:flex;align-items:center;gap:.3rem;font-size:.75rem;color:var(--text-secondary);cursor:pointer;padding:.3rem .5rem;background:var(--bg-card);border:1px solid var(--border);border-radius:4px;transition:all .2s}
+        .filter-check:has(input:checked){background:var(--accent-pink);border-color:var(--accent-pink);color:white}
+        .filter-check input{accent-color:var(--accent-pink)}
+        .filter-select{padding:.4rem .75rem;background:var(--bg-card);border:1px solid var(--border);border-radius:5px;color:var(--text-primary);font-size:.75rem;cursor:pointer}
+        .filter-select:focus{outline:none;border-color:var(--accent-pink)}
+        .filter-reset{padding:.4rem .6rem;background:transparent;border:1px solid var(--border);border-radius:5px;color:var(--text-secondary);font-size:.7rem;cursor:pointer}
+        .filter-reset:hover{background:var(--bg-hover);color:var(--text-primary)}
+        .search-input{padding:.4rem .75rem;background:var(--bg-card);border:1px solid var(--border);border-radius:5px;color:var(--text-primary);font-size:.75rem;min-width:150px}
+        .useful-links{background:var(--bg-card);border:1px solid var(--border);border-radius:10px;padding:1rem;margin-bottom:1.5rem}
+        .useful-links-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:.75rem}
+        .useful-links-title{font-family:'Playfair Display',serif;font-size:1rem;color:var(--accent-pink)}
+        .useful-links-grid{display:flex;flex-wrap:wrap;gap:.5rem}
+        .useful-link{display:inline-flex;align-items:center;gap:.35rem;padding:.4rem .6rem;background:var(--bg-input);border:1px solid var(--border);border-radius:5px;color:var(--text-primary);text-decoration:none;font-size:.75rem;transition:all .2s}
+        .useful-link:hover{background:var(--bg-hover);border-color:var(--accent-pink)}
+        .useful-link.official{border-color:var(--accent-purple);background:rgba(155,77,202,.1)}
+        .add-link-btn{padding:.4rem .6rem;background:var(--bg-input);border:1px dashed var(--border);border-radius:5px;color:var(--text-secondary);font-size:.7rem;cursor:pointer}
+        .add-link-btn:hover{border-color:var(--accent-pink);color:var(--text-primary)}
+        .news-section{background:var(--bg-card);border:1px solid var(--border);border-radius:10px;padding:1rem;margin-bottom:1.5rem}
+        .news-title{font-family:'Playfair Display',serif;font-size:1rem;margin-bottom:.75rem;color:var(--accent-pink)}
+        .news-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:.75rem}
+        .news-card{background:var(--bg-input);border-radius:6px;padding:.75rem}
+        .news-card-title{font-weight:500;font-size:.8rem;margin-bottom:.25rem}
+        .news-card-excerpt{font-size:.7rem;color:var(--text-secondary)}
+        .news-card a{color:var(--accent-pink)}
+        .main{max-width:1600px;margin:0 auto;padding:1.5rem 2rem}
+        .section-title{font-family:'Playfair Display',serif;font-size:1.25rem;margin-bottom:1rem;display:flex;align-items:center;gap:.5rem}
+        .section-badge{background:var(--accent-pink);color:white;font-size:.7rem;padding:.15rem .4rem;border-radius:10px;font-family:'Inter',sans-serif}
+        .albums-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:1rem;margin-bottom:2rem}
+        .album-card{background:var(--bg-card);border-radius:10px;overflow:hidden;cursor:pointer;transition:all .3s;position:relative;border:1px solid var(--border)}
+        .album-card:hover{transform:translateY(-4px);box-shadow:0 8px 25px rgba(232,76,138,.2)}
+        .album-card.owned{border-color:var(--positive)}
+        .album-card.special{border-color:var(--accent-purple)}
+        .album-card.in-wishlist::before{content:'♥';position:absolute;top:.5rem;right:2.5rem;background:var(--negative);color:white;width:20px;height:20px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:.6rem;z-index:5}
+        .album-cover{position:relative;aspect-ratio:1/1;overflow:hidden;background:var(--bg-input)}
+        .album-cover img{width:100%;height:100%;object-fit:cover}
+        .album-badges{position:absolute;top:.5rem;left:.5rem;right:.5rem;display:flex;justify-content:space-between}
+        .album-number{background:var(--accent-pink);color:white;font-size:.65rem;font-weight:600;padding:.2rem .4rem;border-radius:4px}
+        .album-number.special{background:var(--accent-purple)}
+        .album-status{width:22px;height:22px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:.7rem;font-weight:600}
+        .album-status.owned{background:var(--positive);color:white}
+        .album-status.not-owned{background:var(--bg-input);color:var(--text-secondary);border:1px dashed var(--border)}
+        .album-read-badge{position:absolute;bottom:.5rem;right:.5rem;padding:.15rem .35rem;border-radius:3px;font-size:.6rem;font-weight:500}
+        .album-read-badge.read{background:var(--positive);color:white}
+        .album-read-badge.to-read{background:var(--accent-purple);color:white}
+        .photo-count{position:absolute;bottom:.5rem;left:.5rem;background:rgba(0,0,0,.7);color:white;font-size:.6rem;padding:.2rem .4rem;border-radius:3px}
+        .album-info{padding:.75rem}
+        .album-title{font-weight:500;font-size:.85rem;margin-bottom:.25rem;line-height:1.3}
+        .album-meta{font-size:.7rem;color:var(--text-secondary);display:flex;gap:.5rem;flex-wrap:wrap}
+        .album-edition{font-size:.65rem;color:var(--accent-purple);margin-top:.25rem}
+        .album-value{font-size:.7rem;color:var(--accent-pink);margin-top:.25rem;font-weight:500}
+        .album-condition{margin-top:.35rem}
+        .condition-badge{font-size:.6rem;padding:.15rem .35rem;border-radius:3px;font-weight:500}
+        .condition-mint{background:rgba(91,140,106,.2);color:var(--positive)}
+        .condition-good{background:rgba(155,77,202,.2);color:var(--accent-purple)}
+        .condition-fair{background:rgba(192,168,192,.2);color:var(--text-secondary)}
+        .condition-poor{background:rgba(232,76,138,.2);color:var(--negative)}
+        .modal-overlay{display:none;position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(26,10,26,.95);z-index:1000;overflow-y:auto;padding:1rem}
+        [data-theme="light"] .modal-overlay{background:rgba(255,245,248,.95)}
+        .modal-overlay.active{display:flex;justify-content:center;align-items:flex-start}
+        .modal{background:var(--bg-card);border-radius:12px;width:100%;max-width:700px;margin:1rem auto;border:1px solid var(--border);max-height:calc(100vh - 2rem);display:flex;flex-direction:column}
+        .modal-header{padding:1rem 1.25rem;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:center;position:sticky;top:0;background:var(--bg-card);border-radius:12px 12px 0 0;z-index:10}
+        .modal-title{font-family:'Playfair Display',serif;font-size:1.1rem}
+        .modal-close{background:none;border:none;font-size:1.5rem;cursor:pointer;color:var(--text-secondary);line-height:1}
+        .modal-body{padding:1.25rem;overflow-y:auto;flex:1}
+        .modal-top-section{display:grid;grid-template-columns:140px 1fr;gap:1.25rem;margin-bottom:1.25rem}
+        .modal-cover{width:100%;border-radius:8px;border:1px solid var(--border)}
+        .modal-album-title{font-family:'Playfair Display',serif;font-size:1.35rem;margin-bottom:.35rem}
+        .modal-album-meta{font-size:.8rem;color:var(--text-secondary);display:flex;gap:.75rem;flex-wrap:wrap;margin-bottom:.5rem}
+        .synopsis-box{background:var(--bg-input);border-radius:6px;padding:.75rem;font-size:.8rem;color:var(--text-secondary);line-height:1.5}
+        .form-section{margin-bottom:1.25rem}
+        .form-section-title{font-size:.75rem;font-weight:600;color:var(--accent-pink);text-transform:uppercase;letter-spacing:.05em;margin-bottom:.75rem;padding-bottom:.35rem;border-bottom:1px solid var(--border)}
+        .form-group{margin-bottom:.75rem}
+        .form-label{display:block;font-size:.75rem;color:var(--text-secondary);margin-bottom:.35rem}
+        .form-input,.form-select{width:100%;padding:.6rem .75rem;background:var(--bg-input);border:1px solid var(--border);border-radius:6px;color:var(--text-primary);font-size:.8rem;font-family:'Inter',sans-serif}
+        .form-input:focus,.form-select:focus{outline:none;border-color:var(--accent-pink)}
+        .form-textarea{min-height:70px;resize:vertical}
+        .form-row{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:.75rem}
+        .form-row-3{grid-template-columns:repeat(3,1fr)}
+        .form-toggle{display:flex;gap:.5rem}
+        .toggle-btn{flex:1;padding:.6rem;background:var(--bg-input);border:1px solid var(--border);border-radius:6px;color:var(--text-secondary);cursor:pointer;transition:all .2s;font-size:.8rem}
+        .toggle-btn:hover{background:var(--bg-hover)}
+        .toggle-btn.active{background:var(--positive);border-color:var(--positive);color:white}
+        .toggle-btn.active-no{background:var(--negative);border-color:var(--negative);color:white}
+        .toggle-btn.active-wish{background:var(--accent-purple);border-color:var(--accent-purple);color:white}
+        .condition-options,.read-options{display:grid;grid-template-columns:repeat(4,1fr);gap:.4rem}
+        .read-options{grid-template-columns:repeat(2,1fr)}
+        .condition-btn,.read-btn{padding:.5rem;background:var(--bg-input);border:1px solid var(--border);border-radius:5px;color:var(--text-secondary);cursor:pointer;font-size:.75rem;text-align:center}
+        .condition-btn:hover,.read-btn:hover{background:var(--bg-hover)}
+        .condition-btn.active,.read-btn.active{border-width:2px}
+        .condition-btn.mint{border-color:var(--positive);color:var(--positive)}
+        .condition-btn.good{border-color:var(--accent-purple);color:var(--accent-purple)}
+        .condition-btn.fair{border-color:var(--text-secondary)}
+        .condition-btn.poor{border-color:var(--negative);color:var(--negative)}
+        .read-btn.read{border-color:var(--positive);color:var(--positive)}
+        .read-btn.to-read{border-color:var(--accent-purple);color:var(--accent-purple)}
+        .auto-value{font-size:.65rem;color:var(--text-secondary);margin-top:.2rem;font-style:italic}
+        .photo-gallery-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:.5rem;margin-bottom:.75rem}
+        .photo-item{position:relative;aspect-ratio:1/1;border-radius:6px;overflow:hidden;cursor:pointer;border:2px solid transparent}
+        .photo-item.main{border-color:var(--accent-pink)}
+        .photo-item img{width:100%;height:100%;object-fit:cover}
+        .photo-main-badge{position:absolute;top:.25rem;left:.25rem;background:var(--accent-pink);color:white;font-size:.55rem;padding:.1rem .25rem;border-radius:2px}
+        .photo-remove{position:absolute;top:.25rem;right:.25rem;background:var(--negative);color:white;border:none;width:18px;height:18px;border-radius:50%;cursor:pointer;font-size:.7rem;display:flex;align-items:center;justify-content:center}
+        .photo-actions{display:flex;gap:.5rem}
+        .photo-upload,.photo-camera{flex:1;display:flex;align-items:center;justify-content:center;padding:.75rem;background:var(--bg-input);border:2px dashed var(--border);border-radius:6px;cursor:pointer;font-size:.8rem;color:var(--text-secondary)}
+        .photo-upload:hover,.photo-camera:hover{border-color:var(--accent-pink);background:var(--bg-hover)}
+        .photo-upload input,.photo-camera input{display:none}
+        .modal-footer{padding:1rem 1.25rem;border-top:1px solid var(--border);display:flex;gap:.75rem;justify-content:space-between;position:sticky;bottom:0;background:var(--bg-card)}
+        .modal-footer-left,.modal-footer-right{display:flex;gap:.5rem}
+        .btn{padding:.6rem 1rem;border-radius:6px;font-size:.8rem;font-weight:500;cursor:pointer;transition:all .2s}
+        .btn-secondary{background:var(--bg-input);border:1px solid var(--border);color:var(--text-secondary)}
+        .btn-secondary:hover{background:var(--bg-hover);color:var(--text-primary)}
+        .btn-primary{background:var(--accent-pink);border:1px solid var(--accent-pink);color:white}
+        .btn-primary:hover{background:#d4407a}
+        .scanner-modal{position:fixed;inset:0;background:rgba(0,0,0,.95);z-index:1000;display:none;flex-direction:column}
+        .scanner-modal.active{display:flex}
+        .scanner-header{padding:1rem;display:flex;justify-content:space-between;align-items:center;background:var(--bg-card);border-bottom:1px solid var(--border)}
+        .scanner-title{font-family:'Playfair Display',serif;font-size:1.25rem}
+        .scanner-close{background:none;border:none;color:var(--text-primary);font-size:1.5rem;cursor:pointer;padding:.5rem}
+        .scanner-body{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:1rem;position:relative}
+        .scanner-viewport{width:100%;max-width:500px;aspect-ratio:4/3;background:#000;border-radius:12px;overflow:hidden;position:relative}
+        .scanner-viewport video{width:100%;height:100%;object-fit:cover}
+        .scanner-overlay{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;pointer-events:none}
+        .scanner-frame{width:80%;height:40%;border:3px solid var(--accent-pink);border-radius:8px;box-shadow:0 0 0 9999px rgba(0,0,0,.5)}
+        .scanner-line{position:absolute;width:76%;height:2px;background:var(--accent-pink);animation:scan 2s linear infinite}
+        @keyframes scan{0%,100%{top:32%}50%{top:62%}}
+        .scanner-result{margin-top:1.5rem;padding:1.25rem;background:var(--bg-card);border-radius:12px;width:100%;max-width:500px;text-align:center;min-height:120px}
+        .scanner-result-title{font-family:'Playfair Display',serif;font-size:1.1rem;margin-bottom:.5rem}
+        .scanner-result-isbn{font-size:.8rem;color:var(--text-secondary);margin-bottom:.75rem;font-family:monospace}
+        .scanner-result-status{padding:.5rem 1rem;border-radius:6px;font-size:.85rem;display:inline-block}
+        .scanner-result-status.owned{background:rgba(91,140,106,.2);color:var(--positive)}
+        .scanner-result-status.missing{background:rgba(155,77,202,.2);color:var(--accent-purple)}
+        .scanner-result-status.unknown{background:rgba(192,168,192,.2);color:var(--text-secondary)}
+        .scanner-result-actions{margin-top:1rem;display:flex;gap:.5rem;justify-content:center}
+        .scanner-manual{margin-top:1rem;display:flex;gap:.5rem;max-width:500px;width:100%}
+        .scanner-manual input{flex:1;padding:.6rem .75rem;background:var(--bg-input);border:1px solid var(--border);border-radius:6px;color:var(--text-primary);font-size:.85rem}
+        .scanner-manual input:focus{outline:none;border-color:var(--accent-pink)}
+        .scanner-manual button{padding:.6rem 1rem;background:var(--accent-pink);border:none;border-radius:6px;color:white;cursor:pointer;font-size:.85rem}
+        @media(max-width:768px){.header-content{flex-direction:column;gap:.75rem}.stats-bar-inner{flex-direction:column;gap:.75rem}.albums-grid{grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:.75rem}.modal-top-section{grid-template-columns:1fr}.form-row-3{grid-template-columns:1fr}.condition-options,.read-options{grid-template-columns:repeat(2,1fr)}.photo-gallery-grid{grid-template-columns:repeat(3,1fr)}.scanner-viewport{aspect-ratio:3/4}}
+    </style>
+</head>
+<body data-theme="dark">
+    <header class="header">
+        <div class="header-content">
+            <div style="display:flex;align-items:center;">
+                <div class="logo" onclick="window.location.href='index.html'"><div><div class="logo-text">BEAU</div><div class="logo-sub">Collections</div></div></div>
+                <div class="nav-links">
+                    <a href="asterix.html" class="nav-link">Astérix</a>
+                    <a href="mortelle-adele.html" class="nav-link active">Mortelle Adèle</a>
+                    <a href="tomtom-nana.html" class="nav-link">Tom-Tom et Nana</a>
+                </div>
+            </div>
+            <div class="header-actions">
+                <div class="theme-toggle" onclick="toggleTheme()"><div class="theme-icon active" id="icon-dark">☽</div><div class="theme-icon" id="icon-light">☀</div></div>
+                <button class="header-btn wishlist" onclick="openWishlistModal()">♥ Wishlist <span id="wishlist-count-btn">0</span></button>
+                <button class="header-btn" onclick="openScannerModal()">📷 Scan</button>
+                <button class="header-btn primary" onclick="openAddModal()">+ Album</button>
+                <div class="user-menu" id="user-menu">
+                    <div class="user-menu-btn" onclick="toggleUserDropdown()">
+                        <svg class="cockpit-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 4-6 8-6s8 2 8 6"/></svg>
+                        <span id="menu-name">Cockpit</span>
+                        <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg>
+                    </div>
+                    <div class="user-dropdown" id="user-dropdown">
+                        <div class="user-dropdown-header">
+                            <div class="user-dropdown-name" id="dropdown-name">User</div>
+                            <div class="user-dropdown-alias" id="dropdown-alias">@user</div>
+                        </div>
+                        <div class="user-dropdown-item" onclick="openCompareModal();toggleUserDropdown()"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M18 20V10M12 20V4M6 20v-6"/></svg>Stats</div>
+                        <div class="user-dropdown-item" onclick="exportPDF();toggleUserDropdown()"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><path d="M14 2v6h6M16 13H8M16 17H8M10 9H8"/></svg>Export PDF</div>
+                        <div class="user-dropdown-item" onclick="exportExcel();toggleUserDropdown()"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18M3 15h18M9 3v18M15 3v18"/></svg>Export Excel</div>
+                        <div class="user-dropdown-item" onclick="exportJSON();toggleUserDropdown()"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M19 21H5a2 2 0 01-2-2V5a2 2 0 012-2h11l5 5v11a2 2 0 01-2 2z"/><path d="M17 21v-8H7v8M7 3v5h8"/></svg>Sauvegarder</div>
+                        <div class="user-dropdown-item" onclick="importJSON();toggleUserDropdown()"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M17 8l-5-5-5 5M12 3v12"/></svg>Restaurer</div>
+                        <div class="user-dropdown-divider"></div>
+                        <a href="index.html" class="user-dropdown-item"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><path d="M9 22V12h6v10"/></svg>Hub</a>
+                        <div class="user-dropdown-item danger" onclick="signOutAndRedirect()"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4M16 17l5-5-5-5M21 12H9"/></svg>Sign out</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </header>
+    <div class="stats-bar">
+        <div class="stats-bar-inner">
+            <div class="stat-item"><div class="stat-value" id="owned-count">0</div><div class="stat-label">Possédés</div></div>
+            <div class="stat-item"><div class="stat-value" id="missing-count">0</div><div class="stat-label">Manquants</div></div>
+            <div class="stat-item"><div class="stat-value" id="read-count">0</div><div class="stat-label">Lus</div></div>
+            <div class="stat-item price-item"><div class="stat-value" id="value-count">0€</div><div class="stat-label">Valeur est.</div></div>
+            <div class="progress-container"><div class="progress-bar"><div class="progress-fill" id="progress-fill" style="width:0%"></div></div><div class="progress-text" id="progress-text">0%</div></div>
+        </div>
+    </div>
+    <div class="filters">
+        <div class="filters-inner">
+            <div class="filter-group">
+                <label class="filter-check"><input type="checkbox" id="f-owned"> Possédés</label>
+                <label class="filter-check"><input type="checkbox" id="f-missing"> Manquants</label>
+                <label class="filter-check"><input type="checkbox" id="f-wishlist"> Wishlist</label>
+                <label class="filter-check"><input type="checkbox" id="f-read"> Lus</label>
+                <label class="filter-check"><input type="checkbox" id="f-to-read"> À lire</label>
+            </div>
+            <div class="filter-group">
+                <select class="filter-select" id="filter-illustrator"><option value="">Tous illustrateurs</option><option value="miss-prickly">Miss Prickly (T1-7)</option><option value="diane">Diane Le Feyer (T8+)</option></select>
+                <select class="filter-select" id="filter-type"><option value="">Tous types</option><option value="main">Série principale</option><option value="hs">Hors-série</option><option value="roman">Romans</option></select>
+            </div>
+            <input type="text" class="search-input" id="search" placeholder="Rechercher un titre...">
+            <button class="filter-reset" onclick="resetFilters()">Réinitialiser</button>
+        </div>
+    </div>
+    <main class="main">
+        <section class="useful-links" id="useful-links">
+            <div class="useful-links-header">
+                <h2 class="useful-links-title">Liens utiles</h2>
+                <button class="add-link-btn" id="edit-links-btn" onclick="toggleEditLinks()">✎ Modifier</button>
+                <button class="add-link-btn" id="add-link-btn" style="display:none;" onclick="openAddLinkModal()">+ Ajouter</button>
+            </div>
+            <div class="useful-links-grid" id="links-grid"></div>
+        </section>
+        <section class="news-section" id="news-section">
+            <h2 class="news-title">Actualités Mortelle Adèle</h2>
+            <div class="news-grid" id="news-grid"></div>
+        </section>
+        <div id="main-section"><h2 class="section-title">Série principale <span class="section-badge" id="main-badge">0</span></h2><div class="albums-grid" id="main-grid"></div></div>
+        <div id="hs-section" style="display:none;"><h2 class="section-title">Hors-série & Grandes Aventures <span class="section-badge" id="hs-badge">0</span></h2><div class="albums-grid" id="hs-grid"></div></div>
+        <div id="roman-section" style="display:none;"><h2 class="section-title">Romans <span class="section-badge" id="roman-badge">0</span></h2><div class="albums-grid" id="roman-grid"></div></div>
+        <div id="custom-section" style="display:none;"><h2 class="section-title">Mes ajouts <span class="section-badge" id="custom-badge">0</span></h2><div class="albums-grid" id="custom-grid"></div></div>
+    </main>
+
+    <!-- Scanner Modal -->
+    <div class="scanner-modal" id="scanner-modal">
+        <div class="scanner-header">
+            <div class="scanner-title">📷 Scanner ISBN</div>
+            <button class="scanner-close" onclick="closeScannerModal()">×</button>
+        </div>
+        <div class="scanner-body">
+            <div class="scanner-viewport" id="scanner-viewport">
+                <div class="scanner-overlay">
+                    <div class="scanner-frame"></div>
+                    <div class="scanner-line"></div>
+                </div>
+            </div>
+            <div class="scanner-manual">
+                <input type="text" id="manual-isbn" placeholder="Ou saisir l'ISBN manuellement..." maxlength="13">
+                <button onclick="lookupManualISBN()">Chercher</button>
+            </div>
+            <div class="scanner-result" id="scanner-result">
+                <div style="color:var(--text-secondary);font-size:.85rem;">Pointez la caméra vers le code-barres ISBN</div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal-overlay" id="modal">
+        <div class="modal">
+            <div class="modal-header"><div class="modal-title" id="modal-title">Album</div><button class="modal-close" onclick="closeModal()">×</button></div>
+            <div class="modal-body">
+                <div class="modal-top-section">
+                    <div><img class="modal-cover" id="modal-cover" src="" alt=""></div>
+                    <div>
+                        <h2 class="modal-album-title" id="modal-album-title"></h2>
+                        <div class="modal-album-meta"><span id="modal-year"></span><span id="modal-authors"></span><span id="modal-pages"></span></div>
+                        <div id="modal-ref-eo" style="font-size:.7rem;color:var(--text-secondary);margin:.5rem 0;padding:.5rem;background:var(--bg-input);border-radius:4px;"></div>
+                        <div class="synopsis-box" id="modal-synopsis"></div>
+                    </div>
+                </div>
+                <div class="form-section"><div class="form-section-title">Possession</div><div class="form-group"><div class="form-toggle"><button class="toggle-btn" id="btn-owned" onclick="setOwned(true)">✓ Je l'ai</button><button class="toggle-btn" id="btn-not-owned" onclick="setOwned(false)">○ Manquant</button><button class="toggle-btn" id="btn-wishlist" onclick="toggleWishlist()">♥ Wishlist</button></div></div></div>
+                <div class="form-section">
+                    <div class="form-section-title">Lecture</div>
+                    <div class="form-group"><div class="read-options"><button class="read-btn" data-read="read" onclick="setReadStatus('read')">✓ Lu</button><button class="read-btn" data-read="to-read" onclick="setReadStatus('to-read')">À lire</button></div></div>
+                </div>
+                <div id="owned-fields" style="display:none;">
+                    <div class="form-section">
+                        <div class="form-section-title">Mon édition</div>
+                        <div class="form-row">
+                            <div class="form-group"><label class="form-label">Type d'édition</label><select class="form-input form-select" id="edition-type"><option value="">-- Sélectionner --</option><option value="eo">Édition originale</option><option value="reprint">Réédition</option><option value="collector">Édition collector</option></select></div>
+                            <div class="form-group"><label class="form-label">Année de mon édition</label><input type="text" class="form-input" id="edition-year" placeholder="Ex: 2020"></div>
+                        </div>
+                        <div class="form-row">
+                            <div class="form-group"><label class="form-label">ISBN de mon exemplaire</label><input type="text" class="form-input" id="my-isbn" placeholder="978-..."></div>
+                        </div>
+                    </div>
+                    <div class="form-section">
+                        <div class="form-section-title">Acquisition</div>
+                        <div class="form-row form-row-3">
+                            <div class="form-group"><label class="form-label">Date</label><input type="date" class="form-input" id="acquisition-date"></div>
+                            <div class="form-group"><label class="form-label">Canal</label><select class="form-input form-select" id="acquisition-channel"><option value="">--</option><option value="gift">Cadeau</option><option value="bookstore">Librairie</option><option value="online">En ligne</option><option value="flea">Brocante</option></select></div>
+                            <div class="form-group"><label class="form-label">Prix achat (€)</label><input type="number" class="form-input" id="purchase-price" step="0.01"></div>
+                        </div>
+                    </div>
+                    <div class="form-section">
+                        <div class="form-section-title">État & Valeur</div>
+                        <div class="form-row">
+                            <div class="form-group"><label class="form-label">État</label><div class="condition-options"><button class="condition-btn" data-condition="mint" onclick="setCondition('mint')">Neuf</button><button class="condition-btn" data-condition="good" onclick="setCondition('good')">Bon</button><button class="condition-btn" data-condition="fair" onclick="setCondition('fair')">Moyen</button><button class="condition-btn" data-condition="poor" onclick="setCondition('poor')">Usé</button></div></div>
+                            <div class="form-group"><label class="form-label">Valeur estimée (€)</label><input type="number" class="form-input" id="estimated-value" step="0.01" readonly><div class="auto-value" id="value-auto"></div></div>
+                        </div>
+                    </div>
+                    <div class="form-section">
+                        <div class="form-section-title">Mes photos</div>
+                        <div class="photo-gallery-grid" id="photo-grid"></div>
+                        <div class="photo-actions">
+                            <label class="photo-upload"><input type="file" accept="image/*" multiple onchange="addPhotos(event)"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="M21 15l-5-5L5 21"/></svg> Galerie</label>
+                            <label class="photo-camera"><input type="file" accept="image/*" capture="environment" onchange="addPhotos(event)"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M23 19a2 2 0 01-2 2H3a2 2 0 01-2-2V8a2 2 0 012-2h4l2-3h6l2 3h4a2 2 0 012 2z"/><circle cx="12" cy="13" r="4"/></svg> Photo</label>
+                        </div>
+                    </div>
+                    <div class="form-section">
+                        <div class="form-section-title">Notes</div>
+                        <div class="form-group"><textarea class="form-input form-textarea" id="notes" placeholder="Dédicace, souvenir..."></textarea></div>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer"><div class="modal-footer-left"><button class="btn btn-secondary" onclick="closeModal()">Fermer</button></div><div class="modal-footer-right"><button class="btn btn-primary" onclick="saveAlbum()">Enregistrer</button></div></div>
+        </div>
+    </div>
+
+    <div class="modal-overlay" id="add-modal">
+        <div class="modal">
+            <div class="modal-header"><div class="modal-title">Ajouter un album</div><button class="modal-close" onclick="closeAddModal()">×</button></div>
+            <div class="modal-body">
+                <div class="form-group"><label class="form-label">Titre *</label><input type="text" class="form-input" id="new-title"></div>
+                <div class="form-row"><div class="form-group"><label class="form-label">Année</label><input type="number" class="form-input" id="new-year"></div><div class="form-group"><label class="form-label">Pages</label><input type="number" class="form-input" id="new-pages"></div></div>
+                <div class="form-row"><div class="form-group"><label class="form-label">Type</label><select class="form-input" id="new-type"><option value="hs">Hors-série</option><option value="roman">Roman</option><option value="other">Autre</option></select></div></div>
+                <div class="form-group"><label class="form-label">URL couverture</label><input type="text" class="form-input" id="new-cover"></div>
+                <div class="form-group"><label class="form-label">Résumé</label><textarea class="form-input form-textarea" id="new-synopsis"></textarea></div>
+            </div>
+            <div class="modal-footer"><div class="modal-footer-left"><button class="btn btn-secondary" onclick="closeAddModal()">Annuler</button></div><div class="modal-footer-right"><button class="btn btn-primary" onclick="addNewAlbum()">Ajouter</button></div></div>
+        </div>
+    </div>
+
+    <div class="modal-overlay" id="compare-modal">
+        <div class="modal" style="max-width:500px;">
+            <div class="modal-header"><div class="modal-title">Statistiques de la collection</div><button class="modal-close" onclick="closeCompareModal()">×</button></div>
+            <div class="modal-body"><div id="compare-content"></div></div>
+            <div class="modal-footer"><div class="modal-footer-right"><button class="btn btn-secondary" onclick="closeCompareModal()">Fermer</button></div></div>
+        </div>
+    </div>
+
+    <div class="modal-overlay" id="wishlist-modal">
+        <div class="modal" style="max-width:600px;">
+            <div class="modal-header"><div class="modal-title">Ma Liste de Souhaits</div><button class="modal-close" onclick="closeWishlistModal()">×</button></div>
+            <div class="modal-body"><div id="wishlist-content"></div></div>
+        </div>
+    </div>
+
+    <div class="modal-overlay" id="add-link-modal">
+        <div class="modal" style="max-width:400px;">
+            <div class="modal-header"><div class="modal-title">Ajouter un lien</div><button class="modal-close" onclick="closeAddLinkModal()">×</button></div>
+            <div class="modal-body">
+                <div class="form-group"><label class="form-label">Nom du lien *</label><input type="text" class="form-input" id="link-name" placeholder="Ex: Mon blog"></div>
+                <div class="form-group"><label class="form-label">URL *</label><input type="text" class="form-input" id="link-url" placeholder="https://..."></div>
+            </div>
+            <div class="modal-footer"><div class="modal-footer-left"><button class="btn btn-secondary" onclick="closeAddLinkModal()">Annuler</button></div><div class="modal-footer-right"><button class="btn btn-primary" onclick="addCustomLink()">Ajouter</button></div></div>
+        </div>
+    </div>
+
+    <script>
+const mainAlbums=[
+{id:1,title:"Tout ça finira mal",year:2012,illustrator:"miss-prickly",pages:88,isbn:"978-2-84801-691-7",baseValue:8,cover:"https://www.bedetheque.com/cache/thb_couv/Couv_184563.jpg",type:"main",synopsis:"Premier tome où l'on découvre Adèle, petite fille au caractère bien trempé qui terrorise son chat Ajax, ses parents et son amoureux Geoffroy."},
+{id:2,title:"L'enfer, c'est les autres",year:2012,illustrator:"miss-prickly",pages:88,isbn:"978-2-84801-692-4",baseValue:8,cover:"https://www.bedetheque.com/cache/thb_couv/Couv_184917.jpg",type:"main",synopsis:"Adèle continue ses méfaits, convaincue que les autres sont vraiment insupportables."},
+{id:3,title:"C'est pas ma faute !",year:2012,illustrator:"miss-prickly",pages:88,isbn:"978-2-84801-869-0",baseValue:8,cover:"https://www.bedetheque.com/cache/thb_couv/Couv_226062.jpg",type:"main",synopsis:"Adèle n'est jamais responsable de rien. C'est toujours la faute des autres !"},
+{id:4,title:"J'aime pas l'amour !",year:2012,illustrator:"miss-prickly",pages:88,isbn:"978-2-84801-870-4",baseValue:8,cover:"https://www.bedetheque.com/cache/thb_couv/Couv_228179.jpg",type:"main",synopsis:"L'amour ? Très peu pour Adèle ! Geoffroy peut bien lui faire les yeux doux."},
+{id:5,title:"Poussez-vous, les moches !",year:2013,illustrator:"miss-prickly",pages:88,isbn:"978-2-84801-803-8",baseValue:8,cover:"https://www.bedetheque.com/cache/thb_couv/Couv_228172.jpg",type:"main",synopsis:"Adèle a un avis sur tout et surtout sur les gens qu'elle trouve moches."},
+{id:6,title:"Un talent monstre !",year:2013,illustrator:"miss-prickly",pages:88,isbn:"978-2-84801-841-0",baseValue:8,cover:"https://www.bedetheque.com/cache/thb_couv/Couv_228175.jpg",type:"main",synopsis:"Adèle est convaincue d'avoir un talent exceptionnel."},
+{id:7,title:"Pas de pitié pour les nazebroques !",year:2014,illustrator:"miss-prickly",pages:88,isbn:"978-2-84801-972-7",baseValue:8,cover:"https://www.bedetheque.com/cache/thb_couv/Couv_222259.jpg",type:"main",synopsis:"Direction la colonie de vacances des Ragondins Joyeux."},
+{id:8,title:"Parents à vendre",year:2014,illustrator:"diane",pages:88,isbn:"979-10-27600-07-6",baseValue:8,cover:"https://www.bedetheque.com/cache/thb_couv/Couv_235769.jpg",type:"main",synopsis:"Adèle en a marre de ses parents. Solution : les mettre en vente !"},
+{id:9,title:"La rentrée des claques",year:2015,illustrator:"diane",pages:80,isbn:"979-10-27601-06-6",baseValue:8,cover:"https://www.bedetheque.com/cache/thb_couv/Couv_264871.jpg",type:"main",synopsis:"C'est la rentrée et Adèle compte bien marquer son territoire."},
+{id:10,title:"Choubidoulove",year:2016,illustrator:"diane",pages:96,isbn:"979-10-27601-07-3",baseValue:8,cover:"https://www.bedetheque.com/cache/thb_couv/Couv_282976.jpg",type:"main",synopsis:"Ludovic fait battre le cœur d'Adèle."},
+{id:11,title:"Ça sent la croquette !",year:2016,illustrator:"diane",pages:96,isbn:"979-10-27601-44-8",baseValue:8,cover:"https://www.bedetheque.com/cache/thb_couv/Couv_296011.jpg",type:"main",synopsis:"Owen le zombie est de retour !"},
+{id:12,title:"À la pêche aux nouilles !",year:2017,illustrator:"diane",pages:96,isbn:"979-10-27601-90-5",baseValue:8,cover:"https://www.bedetheque.com/cache/thb_couv/Couv_306652.jpg",type:"main",synopsis:"Adèle part à la pêche... aux ennuis !"},
+{id:13,title:"Big Bisous Baveux",year:2017,illustrator:"diane",pages:96,isbn:"979-10-27602-29-2",baseValue:8,cover:"https://www.bedetheque.com/cache/thb_couv/Couv_315235.jpg",type:"main",synopsis:"Les bisous, Adèle déteste. Surtout les baveux."},
+{id:14,title:"Prout atomique",year:2018,illustrator:"diane",pages:96,isbn:"979-10-27602-75-9",baseValue:8,cover:"https://www.bedetheque.com/cache/thb_couv/Couv_335581.jpg",type:"main",synopsis:"Adèle découvre un super-pouvoir très... odorant."},
+{id:15,title:"Funky moumoute",year:2018,illustrator:"diane",pages:96,isbn:"979-10-27603-14-5",baseValue:8,cover:"https://www.bedetheque.com/cache/thb_couv/Couv_349201.jpg",type:"main",synopsis:"Adèle adopte un nouveau style."},
+{id:16,title:"Jurassic Mamie",year:2019,illustrator:"diane",pages:96,isbn:"979-10-27603-48-0",baseValue:8,cover:"https://www.bedetheque.com/cache/thb_couv/Couv_368360.jpg",type:"main",synopsis:"Mamie débarque ! Et elle est aussi terrible qu'Adèle."},
+{id:17,title:"Karmastrophique !",year:2020,illustrator:"diane",pages:96,isbn:"979-10-27604-00-5",baseValue:8,cover:"https://www.bedetheque.com/cache/thb_couv/Couv_397438.jpg",type:"main",synopsis:"Le karma rattrape Adèle... ou pas ?"},
+{id:18,title:"Toi, je te Zut !",year:2021,illustrator:"diane",pages:96,isbn:"979-10-27604-41-8",baseValue:8,cover:"https://www.bedetheque.com/cache/thb_couv/Couv_421991.jpg",type:"main",synopsis:"Quand Adèle dit zut, ça veut dire beaucoup."},
+{id:19,title:"Face de Beurk !",year:2022,illustrator:"diane",pages:96,isbn:"979-10-27604-82-1",baseValue:8,cover:"https://www.bedetheque.com/cache/thb_couv/Couv_456765.jpg",type:"main",synopsis:"Les Beurks sont partout !"},
+{id:20,title:"J'apocalypse grave !",year:2023,illustrator:"diane",pages:96,isbn:"979-10-27605-23-1",baseValue:8,cover:"https://www.bedetheque.com/cache/thb_couv/Couv_484425.jpg",type:"main",synopsis:"L'apocalypse selon Adèle."},
+{id:21,title:"RécréAction Générale !",year:2024,illustrator:"diane",pages:96,isbn:"979-10-27605-64-4",baseValue:10,cover:"https://www.bedetheque.com/cache/thb_couv/Couv_497610.jpg",type:"main",synopsis:"Adèle organise une récréaction !"},
+{id:22,title:"Bande de compotes !",year:2025,illustrator:"diane",pages:96,baseValue:10,cover:"https://www.bedetheque.com/cache/thb_couv/Couv_529187.jpg",type:"main",synopsis:"Le dernier tome en date."}
+];
+
+const hsAlbums=[
+{id:101,title:"Au pays des contes défaits",year:2019,illustrator:"diane",pages:48,baseValue:12,cover:"https://www.bedetheque.com/cache/thb_couv/Couv_379464.jpg",type:"hs",synopsis:"Adèle revisite les contes de fées à sa manière."},
+{id:102,title:"La galaxie des Bizarres",year:2020,illustrator:"diane",pages:48,baseValue:12,cover:"https://www.bedetheque.com/cache/thb_couv/Couv_406464.jpg",type:"hs",synopsis:"Adèle doit rassembler les Bizarres !"},
+{id:103,title:"Show bizarre !",year:2021,illustrator:"diane",pages:48,baseValue:12,cover:"https://www.bedetheque.com/cache/thb_couv/Couv_441310.jpg",type:"hs",synopsis:"Album musical avec Aldebert."},
+{id:104,title:"Une nuit avec ma Baby-sitter",year:2023,illustrator:"diane",pages:48,baseValue:12,cover:"https://www.bedetheque.com/cache/thb_couv/Couv_517296.jpg",type:"hs",synopsis:"Quand la baby-sitter arrive !"},
+{id:105,title:"Les reliques du Chat-Lune",year:2023,illustrator:"diane",pages:48,baseValue:12,cover:"https://www.bedetheque.com/cache/thb_couv/Couv_486373.jpg",type:"hs",synopsis:"Sur les traces du légendaire Chat-Lune."},
+{id:106,title:"Sur les traces du Croquepote !",year:2024,illustrator:"diane",pages:48,baseValue:12,cover:"https://www.bedetheque.com/cache/thb_couv/Couv_508386.jpg",type:"hs",synopsis:"Adèle part à la chasse au Croquepote !"},
+{id:107,title:"L'anniversaire de Jade",year:2024,illustrator:"diane",pages:48,baseValue:10,cover:"https://www.bedetheque.com/cache/thb_couv/Couv_500498.jpg",type:"hs",synopsis:"Jade fête son anniversaire."},
+{id:108,title:"La révolte des Bizarres !",year:2025,illustrator:"diane",pages:48,baseValue:10,cover:"https://www.bedetheque.com/cache/thb_couv/Couv_523428.jpg",type:"hs",synopsis:"Les Bizarres se rebellent !"}
+];
+
+const romanAlbums=[
+{id:201,title:"Mortel un jour, Mortel toujours !",year:2020,illustrator:"diane",pages:160,baseValue:10,cover:"https://www.bedetheque.com/cache/thb_couv/Couv_402203.jpg",type:"roman",synopsis:"Le premier roman de Mortelle Adèle."},
+{id:202,title:"Les bêtises, c'est maintenant !",year:2021,illustrator:"diane",pages:160,baseValue:10,cover:"https://www.bedetheque.com/cache/thb_couv/Couv_425722.jpg",type:"roman",synopsis:"Pas question d'attendre pour faire des bêtises !"},
+{id:203,title:"Debout les Bizarres !",year:2022,illustrator:"diane",pages:160,baseValue:10,cover:"https://www.bedetheque.com/cache/thb_couv/Couv_458023.jpg",type:"roman",synopsis:"Les Bizarres sont de retour en roman."},
+{id:204,title:"V.I.B. - Very Important Bizarres",year:2023,illustrator:"diane",pages:160,baseValue:10,cover:"https://www.bedetheque.com/cache/thb_couv/Couv_488555.jpg",type:"roman",synopsis:"Les Bizarres sont très importants !"}
+];
+
+let customAlbums=JSON.parse(localStorage.getItem('adele-custom-albums')||'[]');
+let collection=JSON.parse(localStorage.getItem('adele-collection')||'{}');
+let wishlist=JSON.parse(localStorage.getItem('adele-wishlist')||'[]');
+let customLinks=JSON.parse(localStorage.getItem('adele-custom-links')||'[]');
+let hiddenDefaultLinks=JSON.parse(localStorage.getItem('adele-hidden-links')||'[]');
+let currentAlbumId=null,searchTerm='',currentTheme=localStorage.getItem('adele-theme')||'dark';
+let filters={owned:false,missing:false,wishlist:false,read:false,toRead:false,illustrator:'',type:''};
+let editLinksMode=false;
+document.body.setAttribute('data-theme',currentTheme);updateThemeIcons();
+
+const defaultLinks=[
+    {id:'official',name:'Site officiel',url:'https://mortelleadele.com',official:true},
+    {id:'mrtan',name:'Mr Tan & Co',url:'https://mrtanandco.com',official:true},
+    {id:'club',name:'Club des Bizarres',url:'https://mortelleadele.com/club-des-bizarres/',official:true}
+];
+
+const newsDatabase=[
+    {title:"Tome 22 : Bande de compotes !",period:{start:'2025-01-01',end:'2026-12-31'},excerpt:"Le nouveau tome de Mortelle Adèle est sorti en octobre 2025 !",link:"https://mortelleadele.com"},
+    {title:"Série animée en préparation",period:{start:'2024-01-01',end:'2026-12-31'},excerpt:"Une série animée Mortelle Adèle est en préproduction pour 2026.",link:"https://mortelleadele.com"},
+    {title:"18 millions de lecteurs !",period:{start:'2024-03-01',end:'2026-06-01'},excerpt:"La série a atteint les 18 millions de lecteurs en mars 2024.",link:"https://mortelleadele.com"}
+];
+
+const illustratorMap={'miss-prickly':'Miss Prickly','diane':'Diane Le Feyer'};
+const conditionMap={mint:{label:'Neuf',class:'condition-mint',mult:1.3},good:{label:'Bon',class:'condition-good',mult:1},fair:{label:'Moyen',class:'condition-fair',mult:0.6},poor:{label:'Usé',class:'condition-poor',mult:0.3}};
+const editionMap={eo:'Éd. originale',reprint:'Réédition',collector:'Collector'};
+
+// Utilitaires de sécurité
+function escapeHTML(str){if(!str)return'';return String(str).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));}
+function isValidUrl(str){try{const url=new URL(str);return['http:','https:'].includes(url.protocol);}catch{return false;}}
+function isValidImageUrl(str){if(!str)return true;if(str.startsWith('data:image/'))return true;return isValidUrl(str);}
+function sanitizeString(str,maxLen=500){if(!str)return'';return String(str).substring(0,maxLen);}
+function sanitizeNumber(val,min=0,max=10000){const n=parseInt(val);if(isNaN(n))return null;return Math.max(min,Math.min(max,n));}
+
+function sanitizeCollectionData(data){
+    if(!data||typeof data!=='object')return{};
+    const clean={};
+    const allowedConditions=['mint','good','fair','poor'];
+    const allowedReadStatus=['read','to-read'];
+    const allowedEditionTypes=['eo','reprint','collector'];
+    
+    for(const[id,item]of Object.entries(data)){
+        if(!/^\d+$/.test(id))continue;
+        const entry={};
+        if(typeof item.owned==='boolean')entry.owned=item.owned;
+        if(allowedConditions.includes(item.condition))entry.condition=item.condition;
+        if(allowedReadStatus.includes(item.readStatus))entry.readStatus=item.readStatus;
+        if(allowedEditionTypes.includes(item.editionType))entry.editionType=item.editionType;
+        if(item.editionYear)entry.editionYear=sanitizeString(item.editionYear,10);
+        if(item.myIsbn)entry.myIsbn=sanitizeString(item.myIsbn,20);
+        if(item.acquisitionDate)entry.acquisitionDate=sanitizeString(item.acquisitionDate,10);
+        if(item.acquisitionChannel)entry.acquisitionChannel=sanitizeString(item.acquisitionChannel,20);
+        if(item.purchasePrice)entry.purchasePrice=sanitizeString(item.purchasePrice,10);
+        if(item.notes)entry.notes=sanitizeString(item.notes,1000);
+        if(Array.isArray(item.photos))entry.photos=item.photos.filter(p=>typeof p==='string'&&p.startsWith('data:image/')).slice(0,20);
+        if(typeof item.mainPhoto==='number')entry.mainPhoto=sanitizeNumber(item.mainPhoto,0,20);
+        clean[id]=entry;
+    }
+    return clean;
+}
+
+function sanitizeCustomAlbums(albums){
+    if(!Array.isArray(albums))return[];
+    return albums.slice(0,50).map(a=>({
+        id:sanitizeNumber(a.id,10001,99999)||Date.now(),
+        title:sanitizeString(a.title,100)||'Sans titre',
+        year:sanitizeNumber(a.year,1900,2100),
+        pages:sanitizeNumber(a.pages,1,1000),
+        type:['main','hs','roman','other'].includes(a.type)?a.type:'other',
+        illustrator:sanitizeString(a.illustrator,30),
+        cover:isValidImageUrl(a.cover)?sanitizeString(a.cover,500):'',
+        synopsis:sanitizeString(a.synopsis,500),
+        baseValue:sanitizeNumber(a.baseValue,1,1000)||8
+    }));
+}
+
+function getAllAlbums(){return[...mainAlbums,...hsAlbums,...romanAlbums,...customAlbums]}
+function toggleTheme(){currentTheme=currentTheme==='dark'?'light':'dark';document.body.setAttribute('data-theme',currentTheme);localStorage.setItem('adele-theme',currentTheme);updateThemeIcons()}
+function updateThemeIcons(){document.getElementById('icon-dark').classList.toggle('active',currentTheme==='dark');document.getElementById('icon-light').classList.toggle('active',currentTheme==='light')}
+
+function calcValue(album,condition,editionType){
+    let v=album.baseValue||8;
+    if(condition&&conditionMap[condition])v*=conditionMap[condition].mult;
+    if(editionType==='eo')v*=2;
+    else if(editionType==='collector')v*=1.5;
+    return Math.round(v);
+}
+
+function renderNews(){
+    const today=new Date().toISOString().split('T')[0];
+    const activeNews=newsDatabase.filter(n=>today>=n.period.start&&today<=n.period.end).slice(0,3);
+    if(activeNews.length===0){document.getElementById('news-section').style.display='none';return;}
+    document.getElementById('news-section').style.display='block';
+    const grid=document.getElementById('news-grid');
+    grid.innerHTML='';
+    activeNews.forEach(n=>{
+        const card=document.createElement('div');card.className='news-card';
+        const title=document.createElement('div');title.className='news-card-title';title.textContent=n.title;
+        const excerpt=document.createElement('div');excerpt.className='news-card-excerpt';excerpt.textContent=n.excerpt+' ';
+        const link=document.createElement('a');link.href=n.link;link.target='_blank';link.rel='noopener noreferrer';link.textContent='En savoir plus';
+        excerpt.appendChild(link);card.appendChild(title);card.appendChild(excerpt);grid.appendChild(card);
+    });
+}
+
+function toggleEditLinks(){
+    editLinksMode=!editLinksMode;
+    document.getElementById('edit-links-btn').textContent=editLinksMode?'✓ Terminer':'✎ Modifier';
+    document.getElementById('add-link-btn').style.display=editLinksMode?'inline-block':'none';
+    renderLinks();
+}
+
+function renderLinks(){
+    const grid=document.getElementById('links-grid');
+    grid.innerHTML='';
+    const visibleDefaults=defaultLinks.filter(l=>!hiddenDefaultLinks.includes(l.id));
+    const allLinks=[...visibleDefaults,...customLinks];
+    
+    allLinks.forEach((l,i)=>{
+        const isDefault=i<visibleDefaults.length;
+        const a=document.createElement('a');
+        if(isValidUrl(l.url)){a.href=l.url;}else{a.href='#';a.onclick=e=>e.preventDefault();}
+        a.target='_blank';
+        a.rel='noopener noreferrer';
+        a.className='useful-link'+(l.official?' official':'');
+        a.textContent=l.name;
+        
+        if(editLinksMode){
+            const btn=document.createElement('button');
+            btn.textContent='×';
+            btn.title='Masquer';
+            btn.style.cssText='background:none;border:none;color:var(--text-secondary);cursor:pointer;margin-left:.35rem;opacity:.6';
+            btn.onclick=e=>{e.preventDefault();e.stopPropagation();isDefault?hideDefaultLink(l.id):removeCustomLink(i-visibleDefaults.length);};
+            a.appendChild(btn);
+        }
+        grid.appendChild(a);
+    });
+    
+    if(editLinksMode&&hiddenDefaultLinks.length>0){
+        const restoreBtn=document.createElement('button');
+        restoreBtn.className='add-link-btn';
+        restoreBtn.style.fontSize='.65rem';
+        restoreBtn.textContent='Restaurer ('+hiddenDefaultLinks.length+')';
+        restoreBtn.onclick=restoreDefaultLinks;
+        grid.appendChild(restoreBtn);
+    }
+}
+
+function hideDefaultLink(id){hiddenDefaultLinks.push(id);localStorage.setItem('adele-hidden-links',JSON.stringify(hiddenDefaultLinks));renderLinks();}
+function restoreDefaultLinks(){hiddenDefaultLinks=[];localStorage.setItem('adele-hidden-links','[]');renderLinks();}
+function removeCustomLink(idx){customLinks.splice(idx,1);localStorage.setItem('adele-custom-links',JSON.stringify(customLinks));renderLinks();}
+function openAddLinkModal(){document.getElementById('add-link-modal').classList.add('active');}
+function closeAddLinkModal(){document.getElementById('add-link-modal').classList.remove('active');document.getElementById('link-name').value='';document.getElementById('link-url').value='';}
+function addCustomLink(){
+    const name=document.getElementById('link-name').value.trim();
+    const url=document.getElementById('link-url').value.trim();
+    if(!name||!url){alert('Nom et URL requis');return;}
+    if(!isValidUrl(url)){alert('URL invalide. Utilisez http:// ou https://');return;}
+    customLinks.push({name:name.substring(0,50),url});
+    localStorage.setItem('adele-custom-links',JSON.stringify(customLinks));
+    renderLinks();closeAddLinkModal();
+}
+
+function filterAlbum(album){
+    const data=collection[album.id]||{},owned=data.owned,readStatus=data.readStatus;
+    const possessionFilters=filters.owned||filters.missing||filters.wishlist;
+    let matchPossession=!possessionFilters;
+    if(possessionFilters){
+        if(filters.owned&&owned)matchPossession=true;
+        if(filters.missing&&!owned)matchPossession=true;
+        if(filters.wishlist&&wishlist.includes(album.id)&&!owned)matchPossession=true;
+    }
+    const readFilters=filters.read||filters.toRead;
+    let matchRead=!readFilters;
+    if(readFilters){
+        if(filters.read&&readStatus==='read')matchRead=true;
+        if(filters.toRead&&readStatus==='to-read')matchRead=true;
+    }
+    let matchIllustrator=!filters.illustrator||album.illustrator===filters.illustrator;
+    let matchType=!filters.type||album.type===filters.type;
+    let matchSearch=album.title.toLowerCase().includes(searchTerm.toLowerCase());
+    return matchPossession&&matchRead&&matchIllustrator&&matchType&&matchSearch;
+}
+
+function resetFilters(){
+    filters={owned:false,missing:false,wishlist:false,read:false,toRead:false,illustrator:'',type:''};
+    document.getElementById('f-owned').checked=false;
+    document.getElementById('f-missing').checked=false;
+    document.getElementById('f-wishlist').checked=false;
+    document.getElementById('f-read').checked=false;
+    document.getElementById('f-to-read').checked=false;
+    document.getElementById('filter-illustrator').value='';
+    document.getElementById('filter-type').value='';
+    document.getElementById('search').value='';
+    searchTerm='';
+    renderAlbums();
+}
+
+function updateFilters(clickedId){
+    if(clickedId==='f-owned'&&document.getElementById('f-owned').checked){document.getElementById('f-missing').checked=false;}
+    if(clickedId==='f-missing'&&document.getElementById('f-missing').checked){document.getElementById('f-owned').checked=false;}
+    if(clickedId==='f-read'&&document.getElementById('f-read').checked){document.getElementById('f-to-read').checked=false;}
+    if(clickedId==='f-to-read'&&document.getElementById('f-to-read').checked){document.getElementById('f-read').checked=false;}
+    filters.owned=document.getElementById('f-owned').checked;
+    filters.missing=document.getElementById('f-missing').checked;
+    filters.wishlist=document.getElementById('f-wishlist').checked;
+    filters.read=document.getElementById('f-read').checked;
+    filters.toRead=document.getElementById('f-to-read').checked;
+    filters.illustrator=document.getElementById('filter-illustrator').value;
+    filters.type=document.getElementById('filter-type').value;
+    renderAlbums();
+}
+
+function renderAlbums(){
+    const grids={main:document.getElementById('main-grid'),hs:document.getElementById('hs-grid'),roman:document.getElementById('roman-grid'),custom:document.getElementById('custom-grid')};
+    Object.values(grids).forEach(g=>g.innerHTML='');
+    const filtered={main:mainAlbums.filter(filterAlbum),hs:hsAlbums.filter(filterAlbum),roman:romanAlbums.filter(filterAlbum),custom:customAlbums.filter(filterAlbum)};
+    document.getElementById('main-section').style.display=filtered.main.length?'block':'none';
+    document.getElementById('hs-section').style.display=filtered.hs.length?'block':'none';
+    document.getElementById('roman-section').style.display=filtered.roman.length?'block':'none';
+    document.getElementById('custom-section').style.display=filtered.custom.length?'block':'none';
+    document.getElementById('main-badge').textContent=filtered.main.length;
+    document.getElementById('hs-badge').textContent=filtered.hs.length;
+    document.getElementById('roman-badge').textContent=filtered.roman.length;
+    document.getElementById('custom-badge').textContent=filtered.custom.length;
+    filtered.main.forEach(a=>grids.main.appendChild(createAlbumCard(a)));
+    filtered.hs.forEach(a=>grids.hs.appendChild(createAlbumCard(a)));
+    filtered.roman.forEach(a=>grids.roman.appendChild(createAlbumCard(a)));
+    filtered.custom.forEach(a=>grids.custom.appendChild(createAlbumCard(a)));
+}
+
+function createAlbumCard(album){
+    const data=collection[album.id]||{},owned=data.owned,condition=data.condition,photos=data.photos||[],isSpecial=album.type!=='main',readStatus=data.readStatus;
+    const mainPhoto=data.mainPhoto!==undefined&&photos[data.mainPhoto]?photos[data.mainPhoto]:null;
+    const inWishlist=wishlist.includes(album.id)&&!owned;
+    const card=document.createElement('div');
+    card.className=`album-card ${owned?'owned':'not-owned'} ${isSpecial?'special':''} ${inWishlist?'in-wishlist':''}`;
+    card.onclick=()=>openModal(album.id);
+    const displayNum=album.type==='main'?`T${album.id}`:album.type==='hs'?'HS':'R';
+    const safeTitle=escapeHTML(album.title);
+    const safeCover=isValidImageUrl(album.cover)?album.cover:'';
+    const coverSrc=mainPhoto||safeCover||'';
+    const value=owned?calcValue(album,condition,data.editionType):0;
+    const safeReadStatus=readStatus&&['read','to-read'].includes(readStatus)?readStatus:'';
+    const readBadge=safeReadStatus?`<div class="album-read-badge ${safeReadStatus}">${safeReadStatus==='read'?'Lu':'À lire'}</div>`:'';
+    const safeEditionType=data.editionType&&editionMap[data.editionType]?escapeHTML(editionMap[data.editionType]):'';
+    const safeEditionYear=escapeHTML(data.editionYear||'');
+    card.innerHTML=`<div class="album-cover"><img src="${escapeHTML(coverSrc)}" alt="${safeTitle}" loading="lazy"><div class="album-badges"><div class="album-number ${isSpecial?'special':''}">${displayNum}</div><div class="album-status ${owned?'owned':'not-owned'}">${owned?'✓':''}</div></div>${photos.length?`<div class="photo-count">${photos.length}</div>`:''}${readBadge}</div><div class="album-info"><div class="album-title">${safeTitle}</div><div class="album-meta"><span class="album-year">${album.year||'?'}</span></div>${safeEditionYear?`<div class="album-edition">Éd. ${safeEditionYear}${safeEditionType?' • '+safeEditionType:''}</div>`:''}${owned&&value?`<div class="album-value price-field">~${value}€</div>`:''}${owned&&condition?`<div class="album-condition"><span class="condition-badge ${conditionMap[condition].class}">${conditionMap[condition].label}</span></div>`:''}</div>`;
+    return card;
+}
+
+function updateStats(){
+    const all=getAllAlbums();
+    let totalValue=0;
+    Object.entries(collection).forEach(([id,data])=>{if(data.owned){const album=all.find(a=>a.id==id);if(album)totalValue+=calcValue(album,data.condition,data.editionType);}});
+    const ownedCount=Object.values(collection).filter(a=>a.owned).length;
+    const readCount=Object.values(collection).filter(a=>a.readStatus==='read').length;
+    const pct=Math.round((ownedCount/all.length)*100);
+    document.getElementById('owned-count').textContent=ownedCount;
+    document.getElementById('missing-count').textContent=all.length-ownedCount;
+    document.getElementById('read-count').textContent=readCount;
+    document.getElementById('value-count').textContent=totalValue>0?`${totalValue}€`:'0€';
+    document.getElementById('progress-fill').style.width=pct+'%';
+    document.getElementById('progress-text').textContent=pct+'%';
+    document.getElementById('wishlist-count-btn').textContent=wishlist.filter(id=>!collection[id]?.owned).length;
+}
+
+function openModal(albumId){
+    currentAlbumId=albumId;const album=getAllAlbums().find(a=>a.id===albumId);if(!album)return;
+    const data=collection[albumId]||{};
+    const displayNum=album.type==='main'?`Tome ${album.id}`:album.type==='hs'?'Hors-série':'Roman';
+    document.getElementById('modal-title').textContent=`${displayNum} - ${album.title}`;
+    document.getElementById('modal-album-title').textContent=album.title;
+    document.getElementById('modal-cover').src=isValidImageUrl(album.cover)?album.cover:'';
+    document.getElementById('modal-year').textContent=album.year?`${album.year}`:'';
+    document.getElementById('modal-authors').textContent=illustratorMap[album.illustrator]||escapeHTML(album.illustrator)||'';
+    document.getElementById('modal-pages').textContent=album.pages?`${album.pages} pages`:'';
+    document.getElementById('modal-synopsis').textContent=album.synopsis||'Pas de résumé.';
+    
+    const refEl=document.getElementById('modal-ref-eo');
+    refEl.innerHTML='';
+    if(album.isbn){
+        const strong=document.createElement('strong');strong.textContent='ISBN: ';
+        refEl.appendChild(strong);refEl.appendChild(document.createTextNode(escapeHTML(album.isbn)));
+        refEl.style.display='block';
+    }else{refEl.style.display='none';}
+    
+    document.getElementById('edition-year').value=data.editionYear||'';
+    document.getElementById('edition-type').value=data.editionType||'';
+    document.getElementById('my-isbn').value=data.myIsbn||'';
+    document.getElementById('acquisition-date').value=data.acquisitionDate||'';
+    document.getElementById('acquisition-channel').value=data.acquisitionChannel||'';
+    document.getElementById('purchase-price').value=data.purchasePrice||'';
+    document.getElementById('notes').value=data.notes||'';
+    
+    document.getElementById('btn-owned').classList.remove('active');
+    document.getElementById('btn-not-owned').classList.remove('active','active-no');
+    document.getElementById('btn-wishlist').classList.remove('active','active-wish');
+    document.querySelectorAll('.condition-btn').forEach(b=>b.classList.remove('active','mint','good','fair','poor'));
+    document.querySelectorAll('.read-btn').forEach(b=>b.classList.remove('active','read','to-read'));
+    
+    if(data.readStatus){const rb=document.querySelector(`.read-btn[data-read="${data.readStatus}"]`);if(rb)rb.classList.add('active',data.readStatus);}
+    
+    if(data.owned){
+        document.getElementById('btn-owned').classList.add('active');
+        document.getElementById('owned-fields').style.display='block';
+        if(data.condition){const cb=document.querySelector(`.condition-btn[data-condition="${data.condition}"]`);if(cb)cb.classList.add('active',data.condition);}
+        updateAutoValue();
+    }else{
+        document.getElementById('btn-not-owned').classList.add('active','active-no');
+        document.getElementById('owned-fields').style.display='none';
+        if(wishlist.includes(albumId)){document.getElementById('btn-wishlist').classList.add('active','active-wish');}
+    }
+    renderPhotos();document.getElementById('modal').classList.add('active');
+}
+
+function updateAutoValue(){
+    const album=getAllAlbums().find(a=>a.id===currentAlbumId);if(!album)return;
+    const condBtn=document.querySelector('.condition-btn.active');
+    const condition=condBtn?.dataset.condition;
+    const editionType=document.getElementById('edition-type').value;
+    const value=calcValue(album,condition,editionType);
+    document.getElementById('estimated-value').value=value;
+    document.getElementById('value-auto').textContent=`Auto: ~${value}€`;
+}
+
+function closeModal(){document.getElementById('modal').classList.remove('active');currentAlbumId=null;}
+function setOwned(owned){
+    document.getElementById('btn-owned').classList.toggle('active',owned);
+    document.getElementById('btn-not-owned').classList.toggle('active',!owned);
+    document.getElementById('btn-not-owned').classList.toggle('active-no',!owned);
+    document.getElementById('owned-fields').style.display=owned?'block':'none';
+    if(owned){document.getElementById('btn-wishlist').classList.remove('active','active-wish');updateAutoValue();}
+}
+function toggleWishlist(){
+    const btn=document.getElementById('btn-wishlist');
+    const isActive=btn.classList.contains('active');
+    btn.classList.toggle('active',!isActive);btn.classList.toggle('active-wish',!isActive);
+    if(!isActive){if(!wishlist.includes(currentAlbumId))wishlist.push(currentAlbumId);}
+    else{wishlist=wishlist.filter(id=>id!==currentAlbumId);}
+    localStorage.setItem('adele-wishlist',JSON.stringify(wishlist));
+}
+function setCondition(c){document.querySelectorAll('.condition-btn').forEach(b=>{b.classList.remove('active','mint','good','fair','poor');if(b.dataset.condition===c)b.classList.add('active',c);});updateAutoValue();}
+function setReadStatus(s){document.querySelectorAll('.read-btn').forEach(b=>{b.classList.remove('active','read','to-read');if(b.dataset.read===s)b.classList.add('active',s);});}
+
+document.getElementById('edition-type').addEventListener('change',updateAutoValue);
+
+function renderPhotos(){const data=collection[currentAlbumId]||{},photos=data.photos||[],mainIdx=data.mainPhoto||0,grid=document.getElementById('photo-grid');grid.innerHTML=photos.map((p,i)=>{const safeSrc=isValidImageUrl(p)?p:'';return`<div class="photo-item ${i===mainIdx?'main':''}" onclick="setMainPhoto(${i})"><img src="${safeSrc}" alt=""><span class="photo-main-badge">${i===mainIdx?'★':''}</span><button class="photo-remove" onclick="event.stopPropagation();removePhoto(${i})">×</button></div>`;}).join('');}
+function setMainPhoto(i){if(!collection[currentAlbumId])collection[currentAlbumId]={};collection[currentAlbumId].mainPhoto=i;renderPhotos();}
+function addPhotos(e){const files=e.target.files;if(!files.length)return;if(!collection[currentAlbumId])collection[currentAlbumId]={photos:[]};if(!collection[currentAlbumId].photos)collection[currentAlbumId].photos=[];Array.from(files).forEach(f=>{const r=new FileReader();r.onload=ev=>{collection[currentAlbumId].photos.push(ev.target.result);renderPhotos();};r.readAsDataURL(f);});e.target.value='';}
+function removePhoto(i){if(collection[currentAlbumId]?.photos){collection[currentAlbumId].photos.splice(i,1);if(collection[currentAlbumId].mainPhoto>=i)collection[currentAlbumId].mainPhoto=Math.max(0,collection[currentAlbumId].mainPhoto-1);renderPhotos();}}
+
+function saveAlbum(){
+    const owned=document.getElementById('btn-owned').classList.contains('active');
+    const condBtn=document.querySelector('.condition-btn.active');
+    const readBtn=document.querySelector('.read-btn.active');
+    const existing=collection[currentAlbumId]||{};
+    collection[currentAlbumId]={owned,condition:owned?(condBtn?.dataset.condition||null):null,readStatus:readBtn?.dataset.read||null,editionYear:owned?document.getElementById('edition-year').value:'',editionType:owned?document.getElementById('edition-type').value:'',myIsbn:owned?document.getElementById('my-isbn').value:'',acquisitionDate:owned?document.getElementById('acquisition-date').value:'',acquisitionChannel:owned?document.getElementById('acquisition-channel').value:'',purchasePrice:owned?document.getElementById('purchase-price').value:'',notes:owned?document.getElementById('notes').value:'',photos:owned?(existing.photos||[]):[],mainPhoto:owned?(existing.mainPhoto||0):0};
+    localStorage.setItem('adele-collection',JSON.stringify(collection));
+    updateStats();renderAlbums();closeModal();
+}
+
+function openAddModal(){document.getElementById('add-modal').classList.add('active');}
+function closeAddModal(){document.getElementById('add-modal').classList.remove('active');}
+function addNewAlbum(){
+    const title=document.getElementById('new-title').value.trim();if(!title){alert('Titre requis');return;}
+    const maxId=Math.max(10000,...customAlbums.map(a=>a.id));
+    const newAlbum={id:maxId+1,title,year:parseInt(document.getElementById('new-year').value)||null,pages:parseInt(document.getElementById('new-pages').value)||null,type:document.getElementById('new-type').value,illustrator:'diane',cover:document.getElementById('new-cover').value.trim(),synopsis:document.getElementById('new-synopsis').value.trim(),baseValue:8};
+    customAlbums.push(newAlbum);localStorage.setItem('adele-custom-albums',JSON.stringify(customAlbums));
+    collection[newAlbum.id]={owned:true};localStorage.setItem('adele-collection',JSON.stringify(collection));
+    updateStats();renderAlbums();closeAddModal();
+}
+
+function openCompareModal(){
+    const all=getAllAlbums();const ownedCount=Object.values(collection).filter(a=>a.owned).length;const readCount=Object.values(collection).filter(a=>a.readStatus==='read').length;
+    let totalValue=0;Object.entries(collection).forEach(([id,data])=>{if(data.owned){const album=all.find(a=>a.id==id);if(album)totalValue+=calcValue(album,data.condition,data.editionType);}});
+    document.getElementById('compare-content').innerHTML=`<div style="text-align:center;padding:1rem;"><div style="font-size:3rem;margin-bottom:.5rem;">📚</div><h3 style="margin-bottom:1rem;">Ma collection Mortelle Adèle</h3><div style="display:grid;grid-template-columns:repeat(2,1fr);gap:1rem;"><div style="background:var(--bg-input);padding:1rem;border-radius:8px;"><div style="font-size:2rem;color:var(--accent-pink)">${ownedCount}</div><div style="font-size:.75rem;color:var(--text-secondary)">Albums possédés</div></div><div style="background:var(--bg-input);padding:1rem;border-radius:8px;"><div style="font-size:2rem;color:var(--accent-purple)">${all.length-ownedCount}</div><div style="font-size:.75rem;color:var(--text-secondary)">Albums manquants</div></div><div style="background:var(--bg-input);padding:1rem;border-radius:8px;"><div style="font-size:2rem;color:var(--positive)">${readCount}</div><div style="font-size:.75rem;color:var(--text-secondary)">Albums lus</div></div><div class="price-field" style="background:var(--bg-input);padding:1rem;border-radius:8px;"><div style="font-size:2rem;color:var(--accent-pink)">${totalValue}€</div><div style="font-size:.75rem;color:var(--text-secondary)">Valeur estimée</div></div></div></div>`;
+    document.getElementById('compare-modal').classList.add('active');
+}
+function closeCompareModal(){document.getElementById('compare-modal').classList.remove('active');}
+
+function openWishlistModal(){
+    const wishlistAlbums=getAllAlbums().filter(a=>wishlist.includes(a.id)&&!collection[a.id]?.owned);
+    const container=document.getElementById('wishlist-content');
+    container.innerHTML='';
+    if(wishlistAlbums.length===0){
+        container.innerHTML='<p style="text-align:center;color:var(--text-secondary)">Aucun album dans la wishlist</p>';
+    }else{
+        wishlistAlbums.forEach(a=>{
+            const item=document.createElement('div');
+            item.style.cssText='display:flex;align-items:center;gap:1rem;padding:.75rem;background:var(--bg-input);border-radius:6px;margin-bottom:.5rem;cursor:pointer';
+            item.onclick=()=>{closeWishlistModal();openModal(a.id);};
+            const img=document.createElement('img');
+            img.src=isValidImageUrl(a.cover)?a.cover:'';
+            img.style.cssText='width:50px;height:50px;object-fit:cover;border-radius:4px';
+            const info=document.createElement('div');
+            const titleDiv=document.createElement('div');titleDiv.style.fontWeight='500';titleDiv.textContent=a.title;
+            const yearDiv=document.createElement('div');yearDiv.style.cssText='font-size:.75rem;color:var(--text-secondary)';yearDiv.textContent=a.year||'';
+            info.appendChild(titleDiv);info.appendChild(yearDiv);
+            item.appendChild(img);item.appendChild(info);container.appendChild(item);
+        });
+    }
+    document.getElementById('wishlist-modal').classList.add('active');
+}
+function closeWishlistModal(){document.getElementById('wishlist-modal').classList.remove('active');}
+
+function exportJSON(){
+    const all=getAllAlbums(),exportData={exportDate:new Date().toISOString(),version:'1.0',series:'mortelle-adele',collection:collection,wishlist:wishlist,customAlbums:customAlbums,customLinks:customLinks,hiddenDefaultLinks:hiddenDefaultLinks,stats:{total:Object.values(collection).filter(a=>a.owned).length}};
+    let totalValue=0;
+    Object.entries(collection).forEach(([id,data])=>{const album=all.find(a=>a.id==id);if(album&&data.owned){totalValue+=calcValue(album,data.condition,data.editionType);}});
+    exportData.stats.totalValue=totalValue;
+    const blob=new Blob([JSON.stringify(exportData,null,2)],{type:'application/json'}),a=document.createElement('a');
+    a.href=URL.createObjectURL(blob);a.download='collection-mortelle-adele-'+new Date().toISOString().split('T')[0]+'.json';a.click();
+}
+
+function importJSON(){
+    const input=document.createElement('input');
+    input.type='file';input.accept='.json';
+    input.onchange=e=>{
+        const file=e.target.files[0];if(!file)return;
+        if(file.size>10*1024*1024){alert('Fichier trop volumineux (max 10MB)');return;}
+        const reader=new FileReader();
+        reader.onload=ev=>{
+            try{
+                const data=JSON.parse(ev.target.result);
+                if(!data.collection||typeof data.collection!=='object'){alert('Fichier invalide : collection manquante');return;}
+                const exportDate=data.exportDate?new Date(data.exportDate):null;
+                const dateStr=exportDate&&!isNaN(exportDate)?exportDate.toLocaleDateString('fr-FR'):'date inconnue';
+                if(!confirm(`Importer cette sauvegarde du ${dateStr} ?\n\nCela remplacera toutes vos données actuelles.`))return;
+                
+                // Sanitize toutes les données
+                collection=sanitizeCollectionData(data.collection);
+                wishlist=Array.isArray(data.wishlist)?data.wishlist.filter(id=>typeof id==='number'&&id>0).slice(0,500):[];
+                customAlbums=sanitizeCustomAlbums(data.customAlbums);
+                customLinks=Array.isArray(data.customLinks)?data.customLinks.filter(l=>l&&typeof l.name==='string'&&isValidUrl(l.url)).slice(0,20).map(l=>({name:sanitizeString(l.name,50),url:l.url})):[];
+                hiddenDefaultLinks=Array.isArray(data.hiddenDefaultLinks)?data.hiddenDefaultLinks.filter(id=>typeof id==='string'&&id.length<30).slice(0,10):[];
+                
+                localStorage.setItem('adele-collection',JSON.stringify(collection));
+                localStorage.setItem('adele-wishlist',JSON.stringify(wishlist));
+                localStorage.setItem('adele-custom-albums',JSON.stringify(customAlbums));
+                localStorage.setItem('adele-custom-links',JSON.stringify(customLinks));
+                localStorage.setItem('adele-hidden-links',JSON.stringify(hiddenDefaultLinks));
+                updateStats();renderAlbums();renderLinks();
+                alert('Import réussi ! '+Object.values(collection).filter(a=>a.owned).length+' albums importés.');
+            }catch(err){alert('Erreur de lecture du fichier: '+err.message);}
+        };
+        reader.readAsText(file);
+    };
+    input.click();
+}
+
+function exportPDF(){
+    const{jsPDF}=window.jspdf;const doc=new jsPDF();
+    doc.setFontSize(18);doc.text('Ma Collection Mortelle Adèle',14,20);
+    doc.setFontSize(10);doc.text(`Exporté le ${new Date().toLocaleDateString('fr-FR')}`,14,28);
+    const all=getAllAlbums().filter(a=>collection[a.id]?.owned);
+    const rows=all.map(a=>{const d=collection[a.id]||{};return[a.title,a.year||'',d.condition?conditionMap[d.condition].label:'',d.editionYear||'',calcValue(a,d.condition,d.editionType)+'€'];});
+    doc.autoTable({head:[['Titre','Année','État','Mon éd.','Valeur']],body:rows,startY:35,styles:{fontSize:8}});
+    doc.save('collection-mortelle-adele.pdf');
+}
+
+function exportExcel(){
+    const all=getAllAlbums().filter(a=>collection[a.id]?.owned);
+    const data=all.map(a=>{const d=collection[a.id]||{};return{Titre:a.title,Année:a.year||'',Type:a.type,État:d.condition?conditionMap[d.condition].label:'','Mon édition':d.editionYear||'','Valeur estimée':calcValue(a,d.condition,d.editionType)};});
+    const ws=XLSX.utils.json_to_sheet(data);const wb=XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb,ws,'Collection');XLSX.writeFile(wb,'collection-mortelle-adele.xlsx');
+}
+
+['f-owned','f-missing','f-wishlist','f-read','f-to-read'].forEach(id=>document.getElementById(id).addEventListener('change',()=>updateFilters(id)));
+document.getElementById('filter-illustrator').addEventListener('change',()=>updateFilters());
+document.getElementById('filter-type').addEventListener('change',()=>updateFilters());
+document.getElementById('search').addEventListener('input',e=>{searchTerm=e.target.value;renderAlbums();});
+
+['modal','add-modal','compare-modal','wishlist-modal','add-link-modal'].forEach(id=>document.getElementById(id).addEventListener('click',e=>{if(e.target.id===id){if(id==='modal')closeModal();else if(id==='add-modal')closeAddModal();else if(id==='compare-modal')closeCompareModal();else if(id==='wishlist-modal')closeWishlistModal();else closeAddLinkModal();}}));
+document.addEventListener('keydown',e=>{if(e.key==='Escape'){closeModal();closeAddModal();closeCompareModal();closeWishlistModal();closeAddLinkModal();closeScannerModal();}});
+
+// ISBN Scanner
+let scannerActive=false;
+let lastScannedCode='';
+
+function openScannerModal(){
+    document.getElementById('scanner-modal').classList.add('active');
+    document.getElementById('scanner-result').innerHTML='<div style="color:var(--text-secondary);font-size:.85rem;">Initialisation de la caméra...</div>';
+    startScanner();
+}
+
+function closeScannerModal(){
+    document.getElementById('scanner-modal').classList.remove('active');
+    stopScanner();
+    document.getElementById('manual-isbn').value='';
+    lastScannedCode='';
+}
+
+function startScanner(){
+    if(typeof Quagga==='undefined'){
+        document.getElementById('scanner-result').innerHTML='<div style="color:var(--negative);">Scanner non disponible. Utilisez la saisie manuelle.</div>';
+        return;
+    }
+    Quagga.init({
+        inputStream:{
+            name:"Live",
+            type:"LiveStream",
+            target:document.getElementById('scanner-viewport'),
+            constraints:{
+                facingMode:"environment",
+                width:{ideal:1280},
+                height:{ideal:720}
+            }
+        },
+        decoder:{
+            readers:["ean_reader","ean_8_reader"]
+        },
+        locate:true
+    },function(err){
+        if(err){
+            console.error('Scanner init error:',err);
+            document.getElementById('scanner-result').innerHTML='<div style="color:var(--negative);">Caméra non disponible. Utilisez la saisie manuelle.</div>';
+            return;
+        }
+        Quagga.start();
+        scannerActive=true;
+        document.getElementById('scanner-result').innerHTML='<div style="color:var(--text-secondary);font-size:.85rem;">Pointez la caméra vers le code-barres ISBN</div>';
+    });
+    Quagga.onDetected(onBarcodeDetected);
+}
+
+function stopScanner(){
+    if(scannerActive&&typeof Quagga!=='undefined'){
+        Quagga.stop();
+        scannerActive=false;
+    }
+}
+
+function onBarcodeDetected(result){
+    const code=result.codeResult.code;
+    if(code===lastScannedCode)return;
+    if(!/^97[89]\d{10}$/.test(code)&&!/^\d{10}$/.test(code))return;
+    lastScannedCode=code;
+    lookupISBN(code);
+}
+
+function lookupManualISBN(){
+    const isbn=document.getElementById('manual-isbn').value.replace(/[-\s]/g,'').trim();
+    if(!isbn){return;}
+    if(!/^97[89]\d{10}$/.test(isbn)&&!/^\d{10}$/.test(isbn)&&!/^\d{13}$/.test(isbn)){
+        document.getElementById('scanner-result').innerHTML='<div style="color:var(--negative);">ISBN invalide. Format attendu: 13 chiffres (978...)</div>';
+        return;
+    }
+    lookupISBN(isbn);
+}
+
+function lookupISBN(isbn){
+    const allAlbums=getAllAlbums();
+    const found=allAlbums.find(a=>a.isbn&&a.isbn.replace(/[-\s]/g,'')===isbn);
+    const resultDiv=document.getElementById('scanner-result');
+    
+    if(found){
+        const data=collection[found.id]||{};
+        const owned=data.owned;
+        const condition=data.condition||'';
+        const conditionLabel=condition?(conditionMap[condition]?.label||condition):'';
+        
+        if(owned){
+            resultDiv.innerHTML=`
+                <div class="scanner-result-title">${escapeHTML(found.title)}</div>
+                <div class="scanner-result-isbn">ISBN: ${escapeHTML(isbn)}</div>
+                <div class="scanner-result-status owned">✓ Déjà dans ta collection${conditionLabel?' • État: '+conditionLabel:''}</div>
+                <div class="scanner-result-actions">
+                    <button class="btn btn-secondary" onclick="closeScannerModal();openModal('${found.id}')">Voir détails</button>
+                </div>
+            `;
+        }else{
+            resultDiv.innerHTML=`
+                <div class="scanner-result-title">${escapeHTML(found.title)}</div>
+                <div class="scanner-result-isbn">ISBN: ${escapeHTML(isbn)}</div>
+                <div class="scanner-result-status missing">○ Tu ne l'as pas encore !</div>
+                <div class="scanner-result-actions">
+                    <button class="btn btn-primary" onclick="quickAdd('${found.id}')">+ Ajouter à ma collection</button>
+                    <button class="btn btn-secondary" onclick="closeScannerModal();openModal('${found.id}')">Détails</button>
+                </div>
+            `;
+        }
+    }else{
+        // ISBN inconnu → chercher sur Open Library
+        resultDiv.innerHTML=`
+            <div class="scanner-result-title">Recherche en cours...</div>
+            <div class="scanner-result-isbn">ISBN: ${escapeHTML(isbn)}</div>
+            <div class="scanner-result-status unknown">Consultation Open Library...</div>
+        `;
+        lookupOpenLibrary(isbn);
+    }
+}
+
+async function lookupOpenLibrary(isbn){
+    const resultDiv=document.getElementById('scanner-result');
+    try{
+        const res=await fetch(`https://openlibrary.org/isbn/${isbn}.json`);
+        if(!res.ok)throw new Error('Not found');
+        const data=await res.json();
+        
+        const title=data.title||'Titre inconnu';
+        const year=data.publish_date?data.publish_date.match(/\d{4}/)?.[0]:'';
+        
+        // Chercher l'éditeur
+        let publisher='';
+        if(data.publishers&&data.publishers.length>0){
+            publisher=data.publishers[0];
+        }
+        
+        // Stocker pour quickAddCustom
+        window.pendingCustomAlbum={isbn,title,year,publisher};
+        
+        resultDiv.innerHTML=`
+            <div class="scanner-result-title">${escapeHTML(title)}</div>
+            <div class="scanner-result-isbn">ISBN: ${escapeHTML(isbn)}</div>
+            ${publisher?`<div style="font-size:.75rem;color:var(--text-secondary);margin-bottom:.5rem">${escapeHTML(publisher)}${year?' ('+year+')':''}</div>`:''}
+            <div class="scanner-result-status unknown">Album trouvé via Open Library</div>
+            <div class="scanner-result-actions">
+                <button class="btn btn-primary" onclick="quickAddCustom()">+ Ajouter à ma collection</button>
+                <button class="btn btn-secondary" onclick="lastScannedCode='';window.pendingCustomAlbum=null;document.getElementById('scanner-result').innerHTML='<div style=\\'color:var(--text-secondary);font-size:.85rem\\'>Pointez la caméra vers le code-barres ISBN</div>'">Scanner un autre</button>
+            </div>
+        `;
+    }catch(e){
+        resultDiv.innerHTML=`
+            <div class="scanner-result-title">Album non trouvé</div>
+            <div class="scanner-result-isbn">ISBN: ${escapeHTML(isbn)}</div>
+            <div class="scanner-result-status unknown">Cet ISBN n'est pas reconnu</div>
+            <div class="scanner-result-actions">
+                <button class="btn btn-secondary" onclick="lastScannedCode=''">Scanner un autre</button>
+            </div>
+        `;
+    }
+}
+
+function quickAdd(albumId){
+    if(!collection[albumId])collection[albumId]={};
+    collection[albumId].owned=true;
+    collection[albumId].condition='good';
+    collection[albumId].addedAt=new Date().toISOString();
+    saveCollection();
+    updateStats();
+    renderAlbums();
+    lookupISBN(lastScannedCode);
+}
+
+function quickAddCustom(){
+    if(!window.pendingCustomAlbum)return;
+    const{isbn,title,year,publisher}=window.pendingCustomAlbum;
+    
+    // Générer un ID unique pour l'album custom
+    const customId='custom-'+(customAlbums.length+1)+'-'+Date.now();
+    
+    // Créer l'album custom
+    const newAlbum={
+        id:customId,
+        title:title,
+        year:year?parseInt(year):null,
+        illustrator:'custom',
+        pages:48,
+        isbn:isbn,
+        baseValue:10,
+        cover:'',
+        type:'custom',
+        synopsis:publisher?`Édition: ${publisher}`:'Album ajouté via scan'
+    };
+    
+    customAlbums.push(newAlbum);
+    localStorage.setItem('adele-custom',JSON.stringify(customAlbums));
+    
+    // Marquer comme possédé
+    collection[customId]={owned:true,condition:'good',addedAt:new Date().toISOString()};
+    saveCollection();
+    
+    updateStats();
+    renderAlbums();
+    
+    window.pendingCustomAlbum=null;
+    
+    // Afficher confirmation
+    document.getElementById('scanner-result').innerHTML=`
+        <div class="scanner-result-title">${escapeHTML(title)}</div>
+        <div class="scanner-result-isbn">ISBN: ${escapeHTML(isbn)}</div>
+        <div class="scanner-result-status owned">✓ Ajouté à ta collection !</div>
+        <div class="scanner-result-actions">
+            <button class="btn btn-secondary" onclick="closeScannerModal();openModal('${customId}')">Voir détails</button>
+            <button class="btn btn-secondary" onclick="lastScannedCode='';document.getElementById('scanner-result').innerHTML='<div style=\\'color:var(--text-secondary);font-size:.85rem\\'>Pointez la caméra vers le code-barres ISBN</div>'">Scanner un autre</button>
+        </div>
+    `;
+}
+
+// Supabase sync (invisible - hérite de la session du hub)
+const SUPABASE_URL='https://ejulkzxohloxfvpbnyyw.supabase.co';
+const SUPABASE_ANON_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImVqdWxrenhvaGxveGZ2cGJueXl3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njg2NDUxNDksImV4cCI6MjA4NDIyMTE0OX0.n98tN_BqJQAZn1MuPRMcINV-qtQomjH2SC5vlzjgCQ0';
+let supabaseClient=null,currentUser=null;
+
+// IMPORTANT: définir originalSave AVANT toute utilisation
+const originalSave=localStorage.setItem.bind(localStorage);
+
+// Auto-save on changes with debounce
+let saveTimeout=null;
+localStorage.setItem=function(key,value){
+    originalSave(key,value);
+    if(key.startsWith('adele-')&&key!=='adele-dirtyAt'&&key!=='adele-theme'){
+        originalSave('adele-dirtyAt',new Date().toISOString());
+        clearTimeout(saveTimeout);
+        saveTimeout=setTimeout(saveToCloud,1000);
+    }
+};
+
+async function initSync(){
+    supabaseClient=window.supabase.createClient(SUPABASE_URL,SUPABASE_ANON_KEY,{
+        auth:{persistSession:true,storageKey:'beau-auth',storage:window.localStorage}
+    });
+    const{data:{session}}=await supabaseClient.auth.getSession();
+    if(session?.user){currentUser=session.user;await loadFromCloud();}
+    supabaseClient.auth.onAuthStateChange(async(event,session)=>{
+        if(event==='SIGNED_IN'&&session?.user){currentUser=session.user;await loadFromCloud();}
+        else if(event==='SIGNED_OUT'){currentUser=null;}
+    });
+}
+
+async function loadFromCloud(){
+    if(!currentUser)return;
+    const{data,error}=await supabaseClient.from('collections').select('data').eq('user_id',currentUser.id).eq('series','mortelle-adele').single();
+    
+    // Si rien en cloud ET on a des données locales : pousser le local
+    if(error||!data?.data){
+        const hasLocalData=Object.keys(collection).length>0||customAlbums.length>0||wishlist.length>0;
+        if(hasLocalData)await saveToCloud();
+        return;
+    }
+    
+    const cloud=data.data;
+    const cloudAt=cloud.savedAt?new Date(cloud.savedAt).getTime():0;
+    const localDirtyAtStr=localStorage.getItem('adele-dirtyAt');
+    const localDirtyAt=localDirtyAtStr?new Date(localDirtyAtStr).getTime():0;
+    
+    // Local plus récent => on garde local et on pousse
+    if(localDirtyAt>cloudAt){
+        await saveToCloud();
+        return;
+    }
+    
+    // Cloud plus récent => on applique cloud SEULEMENT si cloud a des données
+    if(cloud.collection&&Object.keys(cloud.collection).length>0)collection=cloud.collection;
+    if(cloud.wishlist&&cloud.wishlist.length>0)wishlist=cloud.wishlist;
+    if(cloud.customAlbums&&cloud.customAlbums.length>0)customAlbums=cloud.customAlbums;
+    if(cloud.customLinks)customLinks=cloud.customLinks;
+    if(cloud.hiddenDefaultLinks)hiddenDefaultLinks=cloud.hiddenDefaultLinks;
+    
+    // Sauvegarder les données du cloud en local
+    originalSave('adele-collection',JSON.stringify(collection));
+    originalSave('adele-wishlist',JSON.stringify(wishlist));
+    originalSave('adele-custom-albums',JSON.stringify(customAlbums));
+    originalSave('adele-custom-links',JSON.stringify(customLinks));
+    originalSave('adele-hidden-links',JSON.stringify(hiddenDefaultLinks));
+    originalSave('adele-dirtyAt',cloud.savedAt||new Date().toISOString());
+    
+    updateStats();renderAlbums();renderLinks();
+}
+
+async function saveToCloud(){
+    if(!currentUser)return;
+    const payload={collection,wishlist,customAlbums,customLinks,hiddenDefaultLinks,savedAt:new Date().toISOString()};
+    try{
+        const{error}=await supabaseClient.from('collections').upsert({user_id:currentUser.id,series:'mortelle-adele',data:payload},{onConflict:'user_id,series'});
+        if(error)console.warn('Cloud save error',error);
+    }catch(e){
+        console.warn('Cloud save exception',e);
+    }
+}
+
+// User cockpit
+function toggleUserDropdown(){document.getElementById('user-dropdown').classList.toggle('active')}
+document.addEventListener('click',e=>{if(!e.target.closest('.user-menu'))document.getElementById('user-dropdown').classList.remove('active')});
+function loadUserCockpit(){
+    const profile=JSON.parse(localStorage.getItem('beau-user-profile')||'null');
+    if(profile){
+        document.getElementById('menu-name').textContent='Cockpit';
+        document.getElementById('dropdown-name').textContent=profile.firstName||'User';
+        document.getElementById('dropdown-alias').textContent=profile.alias||'';
+        // Apply showPrices preference
+        if(profile.showPrices===false){
+            document.body.classList.add('hide-prices');
+        }else{
+            document.body.classList.remove('hide-prices');
+        }
+    }
+}
+function signOutAndRedirect(){
+    if(supabaseClient){
+        supabaseClient.auth.signOut().then(()=>{
+            localStorage.removeItem('beau-user-profile');
+            localStorage.removeItem('beau-user-email');
+            window.location.href='index.html';
+        });
+    }else{
+        localStorage.removeItem('beau-user-profile');
+        localStorage.removeItem('beau-user-email');
+        window.location.href='index.html';
+    }
+}
+loadUserCockpit();
+
+renderNews();renderLinks();updateStats();renderAlbums();initSync();
+    </script>
+</body>
+</html>
