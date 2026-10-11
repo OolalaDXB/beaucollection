@@ -85,12 +85,8 @@
         .btn-primary:disabled{opacity:.5;cursor:not-allowed}
         .btn-secondary{background:var(--bg-input);color:var(--text-primary)}
         .btn-secondary:hover{background:var(--bg-hover);border-color:var(--accent-copper)}
-        .btn-google{background:white;border-color:#ddd;color:#333;display:flex;align-items:center;justify-content:center;gap:.5rem}
-        .btn-google:hover{background:#f5f5f5;border-color:#ccc}
         .btn-link{background:none;border:none;color:var(--accent-copper);font-size:.8rem;cursor:pointer;text-decoration:underline;padding:0;margin:0;width:auto}
         .btn-link:hover{color:var(--accent-gold)}
-        .divider{display:flex;align-items:center;gap:1rem;margin:1.25rem 0;color:var(--text-secondary);font-size:.75rem}
-        .divider::before,.divider::after{content:'';flex:1;height:1px;background:var(--border)}
         .message{padding:.75rem;border-radius:6px;margin-bottom:1rem;font-size:.8rem;text-align:center}
         .message.success{background:rgba(91,140,106,.15);color:var(--positive);border:1px solid rgba(91,140,106,.3)}
         .message.error{background:rgba(196,92,74,.15);color:var(--negative);border:1px solid rgba(196,92,74,.3)}
@@ -163,8 +159,6 @@
                     <div class="form-group"><input type="password" class="form-input" id="signin-password" placeholder="Password"></div>
                     <button class="btn btn-primary" onclick="signInWithPassword()">Sign in</button>
                     <div class="form-footer"><button class="btn-link" onclick="showTab('reset')">Forgot password?</button></div>
-                    <div class="divider">or</div>
-                    <button class="btn btn-google" onclick="signInWithGoogle()"><svg width="18" height="18" viewBox="0 0 24 24"><path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/><path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/><path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/><path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/></svg>Continue with Google</button>
                 </div>
                 <div id="form-signup" style="display:none;">
                     <div class="form-row"><div class="form-group"><label class="form-label">First Name</label><input type="text" class="form-input" id="signup-firstname" placeholder="John"></div><div class="form-group"><label class="form-label">Alias</label><input type="text" class="form-input" id="signup-alias" placeholder="@johnny"></div></div>
@@ -172,8 +166,6 @@
                     <div class="form-group"><label class="form-label">Password</label><input type="password" class="form-input" id="signup-password" placeholder="Min 6 characters"></div>
                     <div class="form-group"><label class="form-label">Preferred Language</label><select class="form-select" id="signup-language"><option value="en">English</option><option value="fr">Français</option><option value="ru">Русский</option></select></div>
                     <button class="btn btn-primary" onclick="signUp()">Create account</button>
-                    <div class="divider">or</div>
-                    <button class="btn btn-google" onclick="signInWithGoogle()"><svg width="18" height="18" viewBox="0 0 24 24"><path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/><path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/><path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/><path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/></svg>Continue with Google</button>
                 </div>
                 <div id="form-reset" style="display:none;">
                     <div class="modal-header" style="margin-bottom:1rem;"><div class="modal-subtitle">Enter your email to receive a password reset link</div></div>
@@ -280,7 +272,6 @@ function setUser(u){
 function signInWithPassword(){var e=document.getElementById('signin-email').value.trim(),p=document.getElementById('signin-password').value;if(!e||!p){showMessage('Please enter email and password','error','auth');return}supabaseClient.auth.signInWithPassword({email:e,password:p}).then(function(r){if(r.error)showMessage(r.error.message,'error','auth')})}
 function signUp(){var f=document.getElementById('signup-firstname').value.trim(),a=document.getElementById('signup-alias').value.trim(),e=document.getElementById('signup-email').value.trim(),p=document.getElementById('signup-password').value,l=document.getElementById('signup-language').value;if(!e||!p){showMessage('Please enter email and password','error','auth');return}if(p.length<6){showMessage('Password must be at least 6 characters','error','auth');return}if(a&&!a.startsWith('@'))a='@'+a;supabaseClient.auth.signUp({email:e,password:p,options:{emailRedirectTo:window.location.origin+window.location.pathname,data:{first_name:f||e.split('@')[0],alias:a||'@'+e.split('@')[0],language:l,active_collections:['asterix','mortelle-adele']}}}).then(function(r){if(r.error)showMessage(r.error.message,'error','auth');else showMessage('Account created! Check your email.','success','auth')})}
 function resetPassword(){var e=document.getElementById('reset-email').value.trim();if(!e){showMessage('Please enter your email','error','auth');return}supabaseClient.auth.resetPasswordForEmail(e,{redirectTo:window.location.origin+window.location.pathname}).then(function(r){if(r.error)showMessage(r.error.message,'error','auth');else showMessage('Reset link sent!','success','auth')})}
-function signInWithGoogle(){supabaseClient.auth.signInWithOAuth({provider:'google',options:{redirectTo:window.location.origin+window.location.pathname}}).then(function(r){if(r.error)showMessage(r.error.message,'error','auth')})}
 function signOut(){supabaseClient.auth.signOut().then(function(){closeUserDropdown()})}
 function showMessage(m,t,g){var el=document.getElementById(g+'-message');if(el)el.innerHTML='<div class="message '+t+'">'+m+'</div>'}
 function loadProfileForm(){if(!userProfile)return;document.getElementById('profile-firstname').value=userProfile.firstName||'';document.getElementById('profile-alias').value=userProfile.alias||'';document.getElementById('profile-language').value=userProfile.language||'en';document.getElementById('toggle-show-prices').classList.toggle('active',userProfile.showPrices!==false);var h='';COLLECTIONS.forEach(function(c){if(c.comingSoon)return;var a=userProfile.activeCollections&&userProfile.activeCollections.indexOf(c.id)>-1;h+='<div class="collection-toggle"><span class="collection-toggle-name">'+c.name+'</span><div class="toggle-switch'+(a?' active':'')+'" data-collection="'+c.id+'" onclick="toggleCollection(this)"></div></div>'});document.getElementById('collection-toggles').innerHTML=h}
