@@ -1154,12 +1154,17 @@ const SUPABASE_ANON_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYm
 let supabaseClient=null,currentUser=null;
 
 // IMPORTANT: définir originalSave AVANT toute utilisation
-const originalSave=localStorage.setItem.bind(localStorage);
+// Safari n'accepte pas le remplacement de localStorage.setItem (il crée une clé « setItem ») :
+// on enveloppe Storage.prototype.setItem, que tous les navigateurs respectent.
+const nativeSetItem=Storage.prototype.setItem;
+const originalSave=(k,v)=>nativeSetItem.call(localStorage,k,v);
+try{if(typeof localStorage.getItem('setItem')==='string')localStorage.removeItem('setItem');}catch(e){}
 
 // Auto-save on changes with debounce
 let saveTimeout=null;
-localStorage.setItem=function(key,value){
-    originalSave(key,value);
+Storage.prototype.setItem=function(key,value){
+    nativeSetItem.call(this,key,value);
+    if(this===window.sessionStorage)return;
     if(key.startsWith('adele-')&&key!=='adele-dirtyAt'&&key!=='adele-theme'){
         originalSave('adele-dirtyAt',new Date().toISOString());
         clearTimeout(saveTimeout);
@@ -1196,7 +1201,9 @@ async function loadFromCloud(){
     const localDirtyAt=localDirtyAtStr?new Date(localDirtyAtStr).getTime():0;
     
     // Local plus récent => on garde local et on pousse
-    if(localDirtyAt>cloudAt){
+    const localHas=Object.keys(collection).length>0||wishlist.length>0||customAlbums.length>0;
+    const cloudHas=Object.keys(cloud.collection||{}).length>0||(cloud.wishlist||[]).length>0||(cloud.customAlbums||[]).length>0;
+    if(localDirtyAt>cloudAt||(localHas&&!cloudHas)){
         await saveToCloud();
         return;
     }

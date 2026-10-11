@@ -1464,7 +1464,9 @@ async function loadFromCloud(){
     const localDirtyAt=localDirtyAtStr?new Date(localDirtyAtStr).getTime():0;
     
     // Local plus récent => on garde local et on pousse
-    if(localDirtyAt>cloudAt){
+    const localHas=Object.keys(collection).length>0||wishlist.length>0||customAlbums.length>0||filmsSeen.length>0;
+    const cloudHas=Object.keys(cloud.collection||{}).length>0||(cloud.wishlist||[]).length>0||(cloud.customAlbums||[]).length>0||(cloud.filmsSeen||[]).length>0;
+    if(localDirtyAt>cloudAt||(localHas&&!cloudHas)){
         await saveToCloud();
         return;
     }
@@ -1496,9 +1498,14 @@ async function saveToCloud(){
 
 // Auto-save on changes with debounce
 let saveTimeout=null;
-const originalSave=localStorage.setItem.bind(localStorage);
-localStorage.setItem=function(key,value){
-    originalSave(key,value);
+// Safari n'accepte pas le remplacement de localStorage.setItem (il crée une clé « setItem ») :
+// on enveloppe Storage.prototype.setItem, que tous les navigateurs respectent.
+const nativeSetItem=Storage.prototype.setItem;
+const originalSave=(k,v)=>nativeSetItem.call(localStorage,k,v);
+try{if(typeof localStorage.getItem('setItem')==='string')localStorage.removeItem('setItem');}catch(e){}
+Storage.prototype.setItem=function(key,value){
+    nativeSetItem.call(this,key,value);
+    if(this===window.sessionStorage)return;
     if(key.startsWith('asterix-')&&key!=='asterix-dirtyAt'){
         originalSave('asterix-dirtyAt',new Date().toISOString());
         clearTimeout(saveTimeout);
